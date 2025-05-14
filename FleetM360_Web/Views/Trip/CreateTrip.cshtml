@@ -1,0 +1,223 @@
+﻿@model FleetM360_PLL.ViewModels.TripModel
+
+
+@* <div class="container mt-3"> *@
+<h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Trip /</span> Create Trip</h4>
+
+<p>
+    you can assign trip or sub trip
+</p>
+<form class="row g-3">
+    <div class="col-md-4">
+        <label for="inputEmail4" class="form-label">Select Truck</label>
+        <select onchange="test()" asp-for="TruckNumber" id="TruckId" class="form-control select2bs4" asp-items="@(new SelectList(Model.Trucks, "TruckNumber", "TruckNumber"))">
+            <option value="-1" selected disabled>Select Truck</option>
+        </select>
+
+        @*  <select id="inputState" class="form-select">
+                <option selected>ChooseTruck...</option>
+                <option value="1">truck123</option>
+                <option value="2">truck124</option>
+                <option value="3">truck125</option>
+                <option value="4">truck126</option>
+            </select> *@
+    </div>
+    <div class="col-md-4">
+        <label for="inputPassword4" class="form-label">Truck Silo information</label><br />
+        <label for="inputPassword4" class="form-label">truck123 --------------------> silo123</label>
+        <a class="btn btn-primary">assign silo</a>
+    </div>
+    <div class="col-md-4">
+        <label for="inputEmail4" class="form-label">Select Silo</label>
+        <select id="inputState" class="form-select">
+            <option selected>Choose Silo...</option>
+            <option value="1">Silo123</option>
+            <option value="2">Silo124</option>
+            <option value="3">Silo125</option>
+            <option value="4">Silo126</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label for="inputEmail4" class="form-label">Select Driver</label>
+        <select id="inputState" class="form-select">
+            <option selected>Choose Driver...</option>
+            <option value="1">Driver123</option>
+            <option value="2">Driver124</option>
+            <option value="3">Driver125</option>
+            <option value="4">Driver126</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label for="inputEmail4" class="form-label">Select Role</label>
+        <select id="inputState" class="form-select">
+            <option selected>Choose Role...</option>
+            <option value="1">Loading</option>
+            <option value="2">OnRoad</option>
+            <option value="3">CooDriver</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label for="inputEmail4" class="form-label">Assigned Drivers</label>
+        <table class="w-100">
+            <tr>
+                <th>Driver</th>
+                <th>Role</th>
+            </tr>
+            <tbody>
+                <tr>
+                    <td>Driver123</td>
+                    <td>Loading</td>
+                </tr>
+                <tr>
+                    <td>Driver124</td>
+                    <td>OnRoad</td>
+                </tr>
+                <tr>
+                    <td>Driver125</td>
+                    <td>CooDriver</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-4">
+        <label for="inputAddress" class="form-label">Trip Type</label>
+        <select id="inputState" class="form-select">
+            <option selected>Select Type...</option>
+            <option value="1">Cement</option>
+            <option value="2">Single Backhauling</option>
+            <option value="3">Multi backhauling</option>
+            <option value="4">Mission</option>
+        </select>
+    </div>
+    <div class="col-4">
+        <label for="inputAddress2" class="form-label">Material</label>
+        <input type="text" class="form-control" id="inputAddress2" placeholder="Cement, RDF, or others">
+    </div>
+    <div class="col-md-4">
+        <label for="inputCity" class="form-label">QTY</label>
+        <input type="text" class="form-control" id="inputCity">
+    </div>
+    <div class="col-6">
+        <label for="inputAddress" class="form-label">Source</label>
+        <select id="inputState" class="form-select">
+            <option selected>Select Type...</option>
+            <option value="1">Site1</option>
+            <option value="2">Site2</option>
+            <option value="3">Site3</option>
+            <option value="4">Site4</option>
+        </select>
+    </div>
+    <div class="col-6">
+        <label for="inputAddress" class="form-label">Destination</label>
+        <select id="inputState" class="form-select">
+            <option selected>Select Type...</option>
+            <option value="1">Site1</option>
+            <option value="2">Site2</option>
+            <option value="3">Site3</option>
+            <option value="4">Site4</option>
+        </select>
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Add</button>
+    </div>
+</form>
+<br />
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">Card title</h4>
+        <div class="table-responsive-sm">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>type</th>
+                        <th>date</th>
+                        <th>arrive date</th>
+                        <th>Status</th>
+                        <th>Sourse</th>
+                        <th>Destination</th>
+                        <th></th>
+                        @*  <th>Example</th>
+                            <th>Example</th>
+                            <th>Example</th> *@
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Anna</td>
+                        <td>Pitt</td>
+                        <td>35</td>
+                        <td>New York</td>
+                        <td>USA</td>
+                        <td>Female</td>
+                        <td><a href="#" class="card-link">View Details</a></td>
+                        @* <td>Yes</td>
+                            <td>Yes</td>
+                            <td>Yes</td> *@
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <a href="#" class="btn btn-primary">add trip</a>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">Card title</h4>
+        <div class="table-responsive-sm">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>type</th>
+                        <th>date</th>
+                        <th>arrive date</th>
+                        <th>Status</th>
+                        <th>Sourse</th>
+                        <th>Destination</th>
+                        <th></th>
+                        @*  <th>Example</th>
+                            <th>Example</th>
+                            <th>Example</th> *@
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Anna</td>
+                        <td>Pitt</td>
+                        <td>35</td>
+                        <td>New York</td>
+                        <td>USA</td>
+                        <td>Female</td>
+                        <td><a href="#" class="card-link">View Details</a></td>
+                        @* <td>Yes</td>
+                            <td>Yes</td>
+                            <td>Yes</td> *@
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <a href="#" class="btn btn-primary">add trip</a>
+    </div>
+</div>
+
+
+<script>
+    function test() {
+        console.log("welcome");
+        var ddlsource = document.getElementById("TruckId").value;
+        console.log(ddlsource);
+        if (ddlsource != -1) {
+            var url = '@Url.Content("~/")' + "Trip/IsTruckAvaliable";
+            $.getJSON(url, { truckId: ddlsource }, function (data) {
+                if (data != null) {
+                    alert(data);
+                    //$('#DriverId').val('-1').change();
+                    $("#TruckId").prop("selectedIndex", -1);
+                }
+            });
+        }
+    }
+</script>

@@ -1,0 +1,94 @@
+﻿@model FleetM360_PLL.ViewModels.JobSiteModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+<script src="~/AdminLTE/plugins/jquery/jquery.min.js"></script>
+<script src="~/js/sweetalert.min.js"></script>
+
+<script>
+    function showAlert(type) {
+        if (type == "Message") {
+            var message = document.getElementById("message").value;
+            swal(message, {
+                icon: "success",
+            });
+        }
+        else {
+            var error = document.getElementById("error").value;
+            swal(error, {
+                icon: "success",
+            });
+        }
+
+
+    }
+</script>
+@if (TempData["Message"] != null)
+{
+    <input type="hidden" id="message" value="@TempData["Message"]" />
+    <script>
+        showAlert("Message");
+    </script>
+}
+else if (TempData["Error"] != null)
+{
+    <input type="hidden" id="error" value="@TempData["Error"]" />
+    <script>
+        showAlert("Error");
+    </script>
+}
+<h4>Add New Jobsite</h4>
+
+<hr />
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title"></h4>
+    </div>
+    <div class="card-body">
+        <div class="basic-form">
+            <form asp-action="Create">
+                @*  <div asp-validation-summary="All" class="text-danger"></div> *@
+                <div class="form-row">
+
+                    <div class="form-group col-md-6">
+                        <label asp-for="Name" class="control-label">Name <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control" />
+                        @*  <span asp-validation-for="Name" class="text-danger"></span> *@
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="Latitude" class="control-label">Latitude <span class="text-danger">*</span></label>
+                        <input asp-for="Latitude" type="number" step="any" class="form-control" />
+                        @* <span asp-validation-for="Latitude" class="text-danger"></span> *@
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="Longitude" class="control-label">Longitude <span class="text-danger">*</span></label>
+                        <input asp-for="Longitude" type="number" step="any" class="form-control" />
+                        @*  <span asp-validation-for="Longitude" class="text-danger"></span> *@
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="HasNetworkCoverage" class="control-label">HasNetworkCoverage <span class="text-danger">*</span></label>
+                        <input asp-for="HasNetworkCoverage" class="form-control" />
+                        @*  <span asp-validation-for="HasNetworkCoverage" class="text-danger"></span> *@
+                    </div>
+                    <div class="form-group col-md-12">
+                        <label asp-for="Desc" class="control-label">Description <span class="text-danger">*</span></label>
+                        <textarea asp-for="Desc" class="form-control"></textarea>
+                        @*  <span asp-validation-for="Desc" class="text-danger"></span> *@
+                    </div>
+
+                    <div class="form-group">
+                        <input type="submit" value="Create" class="btn btn-primary" />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+
+
+

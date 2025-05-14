@@ -1,0 +1,6 @@
+@FleetM360_WebApi_HostAddress = http://localhost:5260
+
+GET {{FleetM360_WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

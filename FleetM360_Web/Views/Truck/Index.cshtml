@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Real-Time Truck Tracking</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVZcghBdxyoRcpEIJ69V5uOfn_nK2kKSY"></script>
+    @* <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVZcghBdxyoRcpEIJ69V5uOfn_nK2kKSY"></script> *@
+</head>
+<body>
+    <div class="row p-1">
+        <div class="col-1">User</div>
+        <div class="col-5"><input type="text" id="userInput" /></div>
+    </div>
+    <div class="row p-1">
+        <div class="col-1">Message</div>
+        <div class="col-5"><input type="text" class="w-100" id="messageInput" /></div>
+    </div>
+    <div class="row p-1">
+        <div class="col-6 text-end">
+            <input type="button" id="sendButton" value="Send Message" />
+        </div>
+    </div>
+    <div class="row p-1">
+        <div class="col-6">
+            <hr />
+        </div>
+    </div>
+    <div class="row p-1">
+        <div class="col-6">
+            <ul id="messagesList"></ul>
+        </div>
+    </div>
+    <h2>Truck Location Tracking</h2>
+    <div id="map" style="width: 100%; height: 500px;"></div>
+
+    <script>
+        var map;
+        var markers = {};
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 5,
+                center: { lat: 27.1664390563965, lng: 31.0157241821289 } // Default to New York
+            });
+        }
+
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl("/truckHub") // Change to your backend URL
+            .build();
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });//.catch (err => console.error(err.toString()));
+
+        connection.on("ReceiveTruckLocation", function (truckId, latitude, longitude) {
+            console.log(truckId);
+            var position = { lat: latitude, lng: longitude };
+
+            if (markers[truckId]) {
+                markers[truckId].setPosition(position);
+            } else {
+                markers[truckId] = new google.maps.Marker({
+                    position: position,
+                    map: map,
+                    title: "Truck " + truckId
+                });
+            }
+        });
+
+
+
+
+
+        window.onload = initMap;
+    </script>
+
+    @* <script src="~/js/signalr/dist/browser/signalr.js"></script> *@
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+    <script src="~/js/chat.js"></script>
+</body>
+</html>

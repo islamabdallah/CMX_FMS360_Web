@@ -1,0 +1,95 @@
+﻿@model FleetM360_PLL.ViewModels.TruckModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Truck</h4>
+<hr />
+<script src="~/js/sweetalert.min.js"></script>
+<script>
+    function showAlert(type) {
+            if (type == "Message") {
+                var message = document.getElementById("message").value;
+                swal(message, {
+                    icon: "success",
+                });
+            }
+            else {
+                var error = document.getElementById("error").value;
+                swal(error, {
+                    icon: "success",
+                });
+            }
+
+
+        }</script>
+
+@if (TempData["Message"] != null)
+{
+    <input type="hidden" id="message" value="@TempData["Message"]" />
+    <script>showAlert("Message");</script>
+}
+else if (TempData["Error"] != null)
+{
+    <input type="hidden" id="error" value="@TempData["Error"]" />
+    <script>showAlert("Error");</script>
+}
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="TruckNumber" class="control-label"></label>
+                <input asp-for="TruckNumber" class="form-control" />
+                <span asp-validation-for="TruckNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="SapKey" class="control-label"></label>
+                <input asp-for="SapKey" class="form-control" />
+                <span asp-validation-for="SapKey" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LicenceNumber" class="control-label"></label>
+                <input asp-for="LicenceNumber" class="form-control" />
+                <span asp-validation-for="LicenceNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LicenceExpireDate" class="control-label"></label>
+                <input asp-for="LicenceExpireDate" class="form-control" />
+                <span asp-validation-for="LicenceExpireDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Type" class="control-label"></label>
+                <select class="form-select" id="CountryIdd" placeholder="Select Country" data-val="true" data-val-required="You must Select Area" name="Type" asp-for="@Model.Type">
+                    <option value="">Select Type</option>
+                    <option value="Truck">Truck</option>
+                    <option value="Silo">Silo</option>
+                </select>
+                <span asp-validation-for="TruckNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Category" class="control-label"></label>
+                <select class="form-select" id="CountryIdd" placeholder="Select Country" data-val="true" data-val-required="You must Select Area" name="Category" asp-for="@Model.Category">
+                    <option value="">Select Ctegory</option>
+                    <option value="Vol">Vol</option>
+                    <option value="Service">Service</option>
+                    <option value="Silo">Silo</option>
+                </select>
+                <span asp-validation-for="TruckNumber" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+
