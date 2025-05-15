@@ -7,120 +7,310 @@
     <p>
         you can assign trip or sub trip
     </p>
-    <form class="row g-3">
-        <div class="col-md-4">
-            <label for="inputEmail4" class="form-label">Select Truck</label>
-            <select onchange="test()" asp-for="TruckNumber" id="TruckId" class="form-control select2bs4" asp-items="@(new SelectList(Model.Trucks, "TruckNumber", "TruckNumber"))">
-                <option value="-1" selected disabled>Select Truck</option>
-            </select>
+<div class="row">
+    <div class="col-lg-8 mb-4 order-0">
+        <div class="card">
+            <div class="d-flex align-items-end row">
+                <div class="col-sm-7">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Congratulations John! 🎉</h5>
+                        <p class="mb-4">
+                            You have done <span class="fw-bold">72%</span> more sales today. Check your new badge in
+                            your profile.
+                        </p>
 
-            @*  <select id="inputState" class="form-select">
+                        <a href="javascript:;" class="btn btn-sm btn-outline-primary">View Badges</a>
+                    </div>
+                </div>
+                <div class="col-sm-5 text-center text-sm-left">
+                    <div class="card-body pb-0 px-0 px-md-4">
+                        <img src="../assets/img/illustrations/man-with-laptop-light.png"
+                             height="140"
+                             alt="View Badge User"
+                             data-app-dark-img="illustrations/man-with-laptop-dark.png"
+                             data-app-light-img="illustrations/man-with-laptop-light.png" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-4 order-1">
+        <div class="row">
+            <div class="col-lg-6 col-md-12 col-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0">
+                                <img src="../assets/img/icons/unicons/chart-success.png"
+                                     alt="chart success"
+                                     class="rounded" />
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn p-0"
+                                        type="button"
+                                        id="cardOpt3"
+                                        data-bs-toggle="dropdown"
+                                        aria-haspopup="true"
+                                        aria-expanded="false">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
+                                    <a class="dropdown-item" href="javascript:void(0);">View More</a>
+                                    <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="fw-semibold d-block mb-1">Profit</span>
+                        <h3 class="card-title mb-2">$12,628</h3>
+                        <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +72.80%</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-12 col-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0">
+                                <img src="../assets/img/icons/unicons/wallet-info.png"
+                                     alt="Credit Card"
+                                     class="rounded" />
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn p-0"
+                                        type="button"
+                                        id="cardOpt6"
+                                        data-bs-toggle="dropdown"
+                                        aria-haspopup="true"
+                                        aria-expanded="false">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt6">
+                                    <a class="dropdown-item" href="javascript:void(0);">View More</a>
+                                    <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                        <span>Sales</span>
+                        <h3 class="card-title text-nowrap mb-1">$4,679</h3>
+                        <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +28.42%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Total Revenue -->
+    <div class="col-12 col-lg-8 order-2 order-md-3 order-lg-2 mb-4">
+        <div class="card">
+            <div class="row row-bordered g-0">
+                <div class="col-md-8">
+                    <h5 class="card-header m-0 me-2 pb-3">Create ParenTrep</h5>
+                    <div id="totalRevenueChart" class="px-2"></div>
+                </div>
+                <div class="col-md-4">
+                    <form class="row g-3">
+                        <div class="col-md-4">
+                            <label for="inputEmail4" class="form-label">Select Truck</label>
+                            <select onchange="test()" asp-for="TruckNumber" id="TruckId" class="form-control select2bs4" asp-items="@(new SelectList(Model.Trucks, "TruckNumber", "TruckNumber"))">
+                                <option value="-1" selected disabled>Select Truck</option>
+                            </select>
+
+                            @*  <select id="inputState" class="form-select">
                 <option selected>ChooseTruck...</option>
                 <option value="1">truck123</option>
                 <option value="2">truck124</option>
                 <option value="3">truck125</option>
                 <option value="4">truck126</option>
             </select> *@
+                        </div>
+                        <div class="col-md-4">
+                            <label for="inputPassword4" class="form-label">Truck Silo information</label><br />
+                            <label for="inputPassword4" class="form-label">truck123 --------------------> silo123</label>
+                            <a class="btn btn-primary">assign silo</a>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="inputEmail4" class="form-label">Select Silo</label>
+                            <select id="inputState" class="form-select">
+                                <option selected>Choose Silo...</option>
+                                <option value="1">Silo123</option>
+                                <option value="2">Silo124</option>
+                                <option value="3">Silo125</option>
+                                <option value="4">Silo126</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="inputEmail4" class="form-label">Select Driver</label>
+                            <select id="inputState" class="form-select">
+                                <option selected>Choose Driver...</option>
+                                <option value="1">Driver123</option>
+                                <option value="2">Driver124</option>
+                                <option value="3">Driver125</option>
+                                <option value="4">Driver126</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="inputEmail4" class="form-label">Select Role</label>
+                            <select id="inputState" class="form-select">
+                                <option selected>Choose Role...</option>
+                                <option value="1">Loading</option>
+                                <option value="2">OnRoad</option>
+                                <option value="3">CooDriver</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="inputEmail4" class="form-label">Assigned Drivers</label>
+                            <table class="w-100">
+                                <tr>
+                                    <th>Driver</th>
+                                    <th>Role</th>
+                                </tr>
+                                <tbody>
+                                    <tr>
+                                        <td>Driver123</td>
+                                        <td>Loading</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Driver124</td>
+                                        <td>OnRoad</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Driver125</td>
+                                        <td>CooDriver</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-4">
+                            <label for="inputAddress" class="form-label">Trip Type</label>
+                            <select id="inputState" class="form-select">
+                                <option selected>Select Type...</option>
+                                <option value="1">Cement</option>
+                                <option value="2">Single Backhauling</option>
+                                <option value="3">Multi backhauling</option>
+                                <option value="4">Mission</option>
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <label for="inputAddress2" class="form-label">Material</label>
+                            <input type="text" class="form-control" id="inputAddress2" placeholder="Cement, RDF, or others">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="inputCity" class="form-label">QTY</label>
+                            <input type="text" class="form-control" id="inputCity">
+                        </div>
+                        <div class="col-6">
+                            <label for="inputAddress" class="form-label">Source</label>
+                            <select id="inputState" class="form-select">
+                                <option selected>Select Type...</option>
+                                <option value="1">Site1</option>
+                                <option value="2">Site2</option>
+                                <option value="3">Site3</option>
+                                <option value="4">Site4</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label for="inputAddress" class="form-label">Destination</label>
+                            <select id="inputState" class="form-select">
+                                <option selected>Select Type...</option>
+                                <option value="1">Site1</option>
+                                <option value="2">Site2</option>
+                                <option value="3">Site3</option>
+                                <option value="4">Site4</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Add</button>
+                        </div>
+                    </form>
+
+                   
+                </div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <label for="inputPassword4" class="form-label">Truck Silo information</label><br />
-            <label for="inputPassword4" class="form-label">truck123 --------------------> silo123</label>
-            <a class="btn btn-primary">assign silo</a>
+    </div>
+    <!--/ Total Revenue -->
+    <div class="col-12 col-md-8 col-lg-4 order-3 order-md-2">
+        <div class="row">
+            <div class="col-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0">
+                                <img src="../assets/img/icons/unicons/paypal.png" alt="Credit Card" class="rounded" />
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn p-0"
+                                        type="button"
+                                        id="cardOpt4"
+                                        data-bs-toggle="dropdown"
+                                        aria-haspopup="true"
+                                        aria-expanded="false">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt4">
+                                    <a class="dropdown-item" href="javascript:void(0);">View More</a>
+                                    <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="d-block mb-1">Payments</span>
+                        <h3 class="card-title text-nowrap mb-2">$2,456</h3>
+                        <small class="text-danger fw-semibold"><i class="bx bx-down-arrow-alt"></i> -14.82%</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                            <div class="avatar flex-shrink-0">
+                                <img src="../assets/img/icons/unicons/cc-primary.png" alt="Credit Card" class="rounded" />
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn p-0"
+                                        type="button"
+                                        id="cardOpt1"
+                                        data-bs-toggle="dropdown"
+                                        aria-haspopup="true"
+                                        aria-expanded="false">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="cardOpt1">
+                                    <a class="dropdown-item" href="javascript:void(0);">View More</a>
+                                    <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="fw-semibold d-block mb-1">Transactions</span>
+                        <h3 class="card-title mb-2">$14,857</h3>
+                        <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +28.14%</small>
+                    </div>
+                </div>
+            </div>
+            <!-- </div>
+            <div class="row"> -->
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between flex-sm-row flex-column gap-3">
+                            <div class="d-flex flex-sm-column flex-row align-items-start justify-content-between">
+                                <div class="card-title">
+                                    <h5 class="text-nowrap mb-2">Profile Report</h5>
+                                    <span class="badge bg-label-warning rounded-pill">Year 2021</span>
+                                </div>
+                                <div class="mt-sm-auto">
+                                    <small class="text-success text-nowrap fw-semibold"><i class="bx bx-chevron-up"></i> 68.2%</small>
+                                    <h3 class="mb-0">$84,686k</h3>
+                                </div>
+                            </div>
+                            <div id="profileReportChart"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <label for="inputEmail4" class="form-label">Select Silo</label>
-            <select id="inputState" class="form-select">
-                <option selected>Choose Silo...</option>
-                <option value="1">Silo123</option>
-                <option value="2">Silo124</option>
-                <option value="3">Silo125</option>
-                <option value="4">Silo126</option>
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label for="inputEmail4" class="form-label">Select Driver</label>
-            <select id="inputState" class="form-select">
-                <option selected>Choose Driver...</option>
-                <option value="1">Driver123</option>
-                <option value="2">Driver124</option>
-                <option value="3">Driver125</option>
-                <option value="4">Driver126</option>
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label for="inputEmail4" class="form-label">Select Role</label>
-            <select id="inputState" class="form-select">
-                <option selected>Choose Role...</option>
-                <option value="1">Loading</option>
-                <option value="2">OnRoad</option>
-                <option value="3">CooDriver</option>
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label for="inputEmail4" class="form-label">Assigned Drivers</label>
-            <table class="w-100">
-                <tr>
-                    <th>Driver</th>
-                    <th>Role</th>
-                </tr>
-                <tbody>
-                    <tr>
-                        <td>Driver123</td>
-                        <td>Loading</td>
-                    </tr>
-                    <tr>
-                        <td>Driver124</td>
-                        <td>OnRoad</td>
-                    </tr>
-                    <tr>
-                        <td>Driver125</td>
-                        <td>CooDriver</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="col-4">
-            <label for="inputAddress" class="form-label">Trip Type</label>
-            <select id="inputState" class="form-select">
-                <option selected>Select Type...</option>
-                <option value="1">Cement</option>
-                <option value="2">Single Backhauling</option>
-                <option value="3">Multi backhauling</option>
-                <option value="4">Mission</option>
-            </select>
-        </div>
-        <div class="col-4">
-            <label for="inputAddress2" class="form-label">Material</label>
-            <input type="text" class="form-control" id="inputAddress2" placeholder="Cement, RDF, or others">
-        </div>
-        <div class="col-md-4">
-            <label for="inputCity" class="form-label">QTY</label>
-            <input type="text" class="form-control" id="inputCity">
-        </div>
-        <div class="col-6">
-            <label for="inputAddress" class="form-label">Source</label>
-            <select id="inputState" class="form-select">
-                <option selected>Select Type...</option>
-                <option value="1">Site1</option>
-                <option value="2">Site2</option>
-                <option value="3">Site3</option>
-                <option value="4">Site4</option>
-            </select>
-        </div>
-        <div class="col-6">
-            <label for="inputAddress" class="form-label">Destination</label>
-            <select id="inputState" class="form-select">
-                <option selected>Select Type...</option>
-                <option value="1">Site1</option>
-                <option value="2">Site2</option>
-                <option value="3">Site3</option>
-                <option value="4">Site4</option>
-            </select>
-        </div>
-        <div class="col-12">
-            <button type="submit" class="btn btn-primary">Add</button>
-        </div>
-    </form>
+    </div>
+</div>
+   
     <br />
     <div class="card">
         <div class="card-body">
