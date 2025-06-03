@@ -35,7 +35,7 @@ namespace FleetM360_Web.Controllers
         }
         public IActionResult Index()
         {
-            return View();
+            return View("CreateTrip");
         }
         public ActionResult Create()
         {
@@ -59,13 +59,15 @@ namespace FleetM360_Web.Controllers
         // POST: TripController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(TripModel model)
+        public ActionResult Create(long truckId)
         {
             try
             {
-               // TripModel model = new TripModel();
+                TripModel model = new TripModel();
                 model.Trucks = _truckService.GetAllActiveTrucks().Where(t => t.Type == "Truck").ToList();
-                //model.Trucks.Insert(0, new TruckModel { Id = "select Truck" });
+                var truck = _truckService.GetTruck(truckId);
+                model.TruckId = truckId;
+                model.TruckNumber = truck != null ? truck.TruckNumber : "";
                 model.JobSites = _jobsiteService.GetAllActiveJobsites().ToList();
                 // var drivers = _driverService.GetAllActiveDrivers().ToList();
                 // model.Drivers = drivers;
@@ -130,15 +132,17 @@ namespace FleetM360_Web.Controllers
             }
         }
 
-        public async Task<string> IsTruckAvaliable(string truckId)
+        public async Task<ActionResult> IsTruckAvaliable(long truckId)
         {
             TripModel trip = new TripModel();//_tripService.GetPendingAndUnCompletedTripForTruck(truckId);
-            var truck = _truckService.GetTruck(Convert.ToInt64(truckId));
+            //var truck = _truckService.GetTruckByNumber(truckId);
+            var truck = _truckService.GetTruck(truckId);
 
             if (truck != null)
             {
                 var truckSiloModel = _truckSiloService.GetLastActiveTruckSilo(truck.TruckNumber);
-                return JsonSerializer.Serialize(truckSiloModel);
+                //return JsonSerializer.Serialize(truckSiloModel);
+                return RedirectToAction("Create", "Trip", new { truckId });
             }
             else
             {

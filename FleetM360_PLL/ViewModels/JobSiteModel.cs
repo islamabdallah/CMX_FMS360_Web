@@ -23,9 +23,8 @@ namespace FleetM360_PLL.ViewModels
 
         public double Latitude { get; set; }
 
-
         public double Longitude { get; set; }
-
+        public string? City { get; set; }
         public string Desc { get; set; }
 
         public bool HasNetworkCoverage { get; set; }

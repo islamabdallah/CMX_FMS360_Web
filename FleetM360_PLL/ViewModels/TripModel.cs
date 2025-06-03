@@ -11,6 +11,7 @@ namespace FleetM360_PLL.ViewModels
         //trip master Data
         public long ParentTrip { get; set; }
         public long TripNumber { get; set; }//Sap Number
+        public long TruckId { get; set; }
         public string TruckNumber { get; set; }
         public string SiloNumber { get; set; }
         public long TypeId { get; set; } // (Cement/Backuling/Missions)
@@ -21,10 +22,13 @@ namespace FleetM360_PLL.ViewModels
         public string StageAR { get; set; }
         public bool IsCanceled { get; set; }
         public bool IsConverted { get; set; }
+        public bool FromPlant { get; set; }
         public double Qty { get; set; }
         public long Id { get; set; }
         public bool IsDelted { get; set; }
         public bool IsVisible { get; set; }
+        public List<long>loadDrivers { get; set; }
+        public List<long> onRoadDrivers { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public DateTime ArrivedDate { get; set; }

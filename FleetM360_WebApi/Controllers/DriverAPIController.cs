@@ -1,6 +1,7 @@
 ﻿using FleetM360_DAL.Data.Repository;
 using FleetM360_DAL.Models;
 using FleetM360_DAL.Models.MasterModels;
+using FleetM360_DAL.Repository.EntityFramework;
 using FleetM360_PLL.APIViewModels.Drivers;
 using FleetM360_PLL.APIViewModels.Trip;
 using FleetM360_PLL.Message;
@@ -32,12 +33,13 @@ namespace FleetM360_WebApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly ITermsConditionsService _termsConditionsService;
         private readonly IRepository<Truck, long> _truckRepository;
+        private readonly ApplicationDBContext _context;
 
         public DriverAPIController(IDriverService driverService, IEmployeeService employeeService,
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
             ITripService tripService,
-            ILogger<DriverAPIController> logger,
+            ILogger<DriverAPIController> logger, ApplicationDBContext context,
             ITruckService truckService, IConfiguration configuration, ITermsConditionsService termsConditionsService, IRepository<Truck, long> truckRepository)
         {
             _driverService = driverService;
@@ -50,6 +52,7 @@ namespace FleetM360_WebApi.Controllers
             _configuration = configuration;
             _termsConditionsService = termsConditionsService;
             _truckRepository = truckRepository;
+            _context = context;
         }
         [HttpPost("userLogin")]
         public async Task<ActionResult> UserLogin([Bind(include: "DriverNumber,Password")] LoginModel loginModel)
@@ -119,7 +122,6 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Data = 0, Message = "رقم المستخدم أو كلمة السر خطأ" });
         }
 
-
         [HttpPost("userLoginHomeData")]
         public async Task<ActionResult> userLoginHomeData([Bind(include: "DriverNumber")] LoginModel loginModel)
         {
@@ -151,28 +153,22 @@ namespace FleetM360_WebApi.Controllers
                 if (aspNetUser != null)
                 {
                     var truck = await _truckRepository.Find(e => e.IsVisible == true && e.Id == Convert.ToInt64(loginModel.truckId)).FirstOrDefaultAsync();
-                    //if (truck != null)
-                    //{ 
-                    //    if(truck.status== "Maintainance")
-                    //    {
-                    //        return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[loginModel.languageId], Data = 0 }); // FailedAccount
-                    //    }
-                    //}
+                    if (truck == null)
+                    {
+                        return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[loginModel.languageId], Data = 0 }); // FailedAccount                       
+                    }
                     HomeDataModel homeData = new HomeDataModel();
                     homeData.driver = new userApiModel();
                     homeData.driver.userPhoneNumber = driver.PhoneNumber;
                     homeData.driver.userNumber = driver.DriverNumber.ToString();
                     homeData.driver.userName = driver.FullName;
-
-                    //var groupedTrips = await _tripService.GetAllPendingTripofParentTrip();//.GetAllpendingTripGroupedByParentTrip();
                     homeData.trips = await _tripService.GetAllPendingTripofTruckforMobile(loginModel.truckId, loginModel.languageId);
-
-                    // return Ok(new { Data = homeData, Message = "Successful Process" });
+                    var userNotificationModels = await _context.TruckNotifications.Where(UN => UN.TruckNumber == truck.TruckNumber && UN.Seen==false).ToListAsync();
+                    homeData.userUnSeenNotificationCount = userNotificationModels !=null?userNotificationModels.Count : 0;
                     return Ok(new { flag = true, Message = UserMessage.Done[loginModel.languageId], Data = homeData });
 
                 }
             }
-            //return BadRequest(new { Data = 0, Message = "رقم المستخدم أو كلمة السر خطأ" });
             return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[loginModel.languageId], Data = 0 }); // FailedAccount
         }
 
@@ -186,10 +182,9 @@ namespace FleetM360_WebApi.Controllers
                 if (aspNetUser != null)
                 {
                    
-                    var homeData = await _tripService.GetTripDetailsForMobile(Convert.ToInt64(loginModel.tripId),loginModel.languageId);//.GetAllpendingTripGroupedByParentTrip();
+                    var homeData = await _tripService.GetTripDetailsForMobile(Convert.ToInt64(loginModel.tripId),loginModel.languageId);
                     if (homeData != null)
                     {
-                        //return Ok(new { Data = groupedTrips, Message = "Successful Process" });
                         return Ok(new { flag = true, Message = UserMessage.Done[loginModel.languageId], Data = homeData });
                     }
                     else
@@ -198,7 +193,6 @@ namespace FleetM360_WebApi.Controllers
                     }
                 }
             }
-            // return BadRequest(new { Data = 0, Message = "رقم المستخدم أو كلمة السر خطأ" });
             return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[loginModel.languageId], Data = 0 }); // FailedAccount
         }
     }

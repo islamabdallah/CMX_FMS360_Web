@@ -16,6 +16,7 @@ using static FleetM360_PLL.CommanData;
 using FleetM360_PLL.APIViewModels.Hazard;
 using FleetM360_DAL.Migrations.ApplicationDB;
 using FleetM360_PLL.ViewModels.Auth;
+using FleetM360_DAL.Models.Entity;
 
 namespace FleetM360_WebApi.Controllers
 {
@@ -168,27 +169,50 @@ namespace FleetM360_WebApi.Controllers
                         {                           
                             var onroaddriver =await _context.TripDrivers.Where(e => e.ParentTrip == trip.ParentTrip && e.Role == "OnRoad" && e.DriverId == loginModel.UserNumber).FirstOrDefaultAsync();
                             var loadedd =await _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.IsVisible == true && t.Event == "EndGrossWeight").FirstOrDefaultAsync();
-
-                            if (onroaddriver != null && loginModel.category==1 && loadedd !=null)
+                            if (trip.SubTypeId == 1)
                             {
-                                startTripApiModel.route = "PreCheckToolsScreen";
-                            }
-                            if (onroaddriver != null && loginModel.category == 3 && loadedd != null)
-                            {
-                                startTripApiModel.route = "WaitingPlantScreen";
-                            }
-                            else if(loginModel.category==3 && onroaddriver != null && loadedd == null)
-                            {
-                                startTripApiModel.route = "WeightDetailsPage";
-                            }
-                            else if (loginModel.category == 3 && onroaddriver == null)
-                            {
-                                startTripApiModel.route = "TripsScreen";
+                                if (onroaddriver != null && loginModel.category == 1)
+                                {
+                                    startTripApiModel.route = "PreCheckToolsScreen";
+                                }
+                                else if (onroaddriver != null && loginModel.category == 3 && loadedd != null)
+                                {
+                                    startTripApiModel.route = "WaitingPlantScreen";
+                                }
+                                else if (loginModel.category == 3 && onroaddriver != null && loadedd == null)
+                                {
+                                    startTripApiModel.route = "WeightDetailsPage";
+                                }
+                                else if (loginModel.category == 3 && onroaddriver == null)
+                                {
+                                    startTripApiModel.route = "TripsScreen";
+                                }
+                                else
+                                {
+                                    startTripApiModel.route = "PreCheckScreen";
+                                }
                             }
                             else
                             {
-                                startTripApiModel.route = "PreCheckScreen";
+                                if (onroaddriver != null && loginModel.category == 1)
+                                {
+                                    startTripApiModel.route = "PreCheckToolsScreen";
+                                }
+                                else if (onroaddriver != null && loginModel.category == 3)
+                                {
+                                    startTripApiModel.route = "WaitingPlantScreen";
+                                }
+
+                                else if (loginModel.category == 3 && onroaddriver == null)
+                                {
+                                    startTripApiModel.route = "TripsScreen";
+                                }
+                                else
+                                {
+                                    startTripApiModel.route = "PreCheckScreen";
+                                }
                             }
+
                             if (loginModel.questionIds != null)
                             {
                                 if (loginModel.questionIds.Count > 0)
@@ -201,7 +225,7 @@ namespace FleetM360_WebApi.Controllers
                                     {
                                         startTripApiModel.route = "";
                                     }
-                                        return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = startTripApiModel });
+                                    return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = startTripApiModel });
                                 }
                                 else
                                 {
@@ -367,7 +391,7 @@ namespace FleetM360_WebApi.Controllers
                                     ParentTrip = trip.ParentTrip,
                                     TripNumber = trip.TripNumber,
                                     Event = "EndGrossWeight",
-                                    LogId = 3,
+                                    LogId = tripLog.Id,
                                     Lat = loginModel.lat,
                                     Long = loginModel.lng,
                                     CreatedBy = loginModel.userNumber.ToString(),
@@ -424,11 +448,11 @@ namespace FleetM360_WebApi.Controllers
                     ApplicationUser aspNetUser = await _userManager.FindByIdAsync(driver.UserId);
                     if (aspNetUser != null)
                     {
-                        var tripLog = _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.TripNumber == trip.TripNumber && t.Event == "StartMaintainance" || t.Event=="TruckConverted" || t.Event == "EndMaintainance").OrderBy(t=>t.Id).LastOrDefaultAsync().Result;
+                        var tripLog = _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.TripNumber == trip.TripNumber && t.IsVisible==true && (t.Event == "StartMaintainance" || t.Event == "Maintainance" || t.Event=="TruckConverted" || t.Event == "EndMaintainance")).OrderBy(t=>t.Id).LastOrDefaultAsync().Result;
                         // var groupedTrips = await _tripService.GettruckFaults(loginModel);
                         if (tripLog != null)
                         {
-                          if(tripLog.Event== "StartMaintainance")
+                          if(tripLog.Event== "StartMaintainance" || tripLog.Event == "Maintainance")
                             {
                                 return Ok(new { flag = true, Message = UserMessage.startMaintainance[loginModel.languageId], Data = new TruckApiModel() });
                             }
@@ -538,6 +562,7 @@ namespace FleetM360_WebApi.Controllers
 
           })
           .ToListAsync();
+            maintenanceData.responsibleOptions =new List<string>{ "قسم الصيانة","السائق"};
 
             return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[languageId], Data = maintenanceData });
 
@@ -560,8 +585,8 @@ namespace FleetM360_WebApi.Controllers
                     {
                         if (model.type.Trim() == "Maintenance".Trim())
                         {
-                            var waysToDealWithTruckBreakdowns = _context.WayToDealWithTruckBreakdowns.Where(t => t.Id == Convert.ToInt64(model.causeOfFailure)).FirstOrDefault();
-                            var causesOfTruckFailure = _context.CauseOfTruckFailures.Where(t => t.Id == Convert.ToInt64(model.causeOfFailure)).FirstOrDefault();
+                            var waysToDealWithTruckBreakdowns =(model.wayOfDeal != null && model.wayOfDeal !="")? _context.WayToDealWithTruckBreakdowns.Where(t => t.Id == Convert.ToInt64(model.wayOfDeal)).FirstOrDefault() : null;
+                            var causesOfTruckFailure = (model.causeOfFailure != null && model.causeOfFailure != "") ? _context.CauseOfTruckFailures.Where(t => t.Id == Convert.ToInt64(model.causeOfFailure)).FirstOrDefault() : null;
                             StopModel result = new StopModel()
                             {
                                 causeOfFailure = causesOfTruckFailure != null ? causesOfTruckFailure.Name : "",
@@ -571,6 +596,7 @@ namespace FleetM360_WebApi.Controllers
                                 lng = model.lng,
                                 startTime = model.startTime,
                                 type = model.type,
+                                responsibleOption= model.responsibleOption,
                             };
                             var Event = _tripLogService.CreateStartRoadMaintenanceAsync(model).Result;
                             if (Event)
@@ -637,15 +663,63 @@ namespace FleetM360_WebApi.Controllers
                     {
                         if (model.type.Trim() == "Maintenance".Trim())
                         {
-                            var waysToDealWithTruckBreakdowns = _context.WayToDealWithTruckBreakdowns.Where(t => t.Name == model.wayOfDeal).FirstOrDefault();
-                            var causesOfTruckFailure = _context.CauseOfTruckFailures.Where(t => t.Name == model.causeOfFailure).FirstOrDefault();
+                            var waysToDealWithTruckBreakdowns = (model.wayOfDeal != null && model.wayOfDeal != "") ? _context.WayToDealWithTruckBreakdowns.Where(t => t.Name == model.wayOfDeal).FirstOrDefault() :null;
+                            var causesOfTruckFailure = (model.causeOfFailure != null && model.causeOfFailure != "") ? _context.CauseOfTruckFailures.Where(t => t.Name == model.causeOfFailure).FirstOrDefault() : null;
                             model.causeOfFailure = causesOfTruckFailure != null ? causesOfTruckFailure.Id.ToString() : "";
                             model.wayOfDeal = waysToDealWithTruckBreakdowns != null ? waysToDealWithTruckBreakdowns.Id.ToString() : "";
-                            var Event = _tripLogService.CreateEndRoadMaintenanceAsync(model).Result;
-                            if (Event)
+
+                            var tripLog = _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.TripNumber == trip.TripNumber &&t.IsVisible==true && (t.Event == "StartMaintainance" || t.Event == "TruckConverted" || t.Event == "EndMaintainance" || t.Event == "Maintainance")).OrderBy(t => t.Id).LastOrDefaultAsync().Result;
+                            // var groupedTrips = await _tripService.GettruckFaults(loginModel);
+                            if (tripLog != null)
                             {
-                                return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = "" });
+                                if (tripLog.Event == "StartMaintainance" || tripLog.Event == "Maintainance")
+                                {
+                                    return Ok(new { flag = true, Message = UserMessage.startMaintainance[model.languageId], Data = UserMessage.roadStartMaintainance[model.languageId] });
+                                }
+                                else if (tripLog.Event == "EndMaintainance")
+                                {
+                                    return Ok(new { flag = true, Message = UserMessage.endMaintainance[model.languageId], Data = UserMessage.roadEndMaintainance[model.languageId] });
+                                }
+                                else if (tripLog.Event == "TruckConverted")
+                                {
+                                    var truck = _context.Trucks.Where(t => t.TruckNumber == trip.TruckNumber).FirstOrDefaultAsync().Result;
+                                    if (truck != null)
+                                    {
+
+                                        TruckApiModel truckApiModel = new TruckApiModel();
+                                        truckApiModel.truckNumber = truck.TruckNumber;
+                                        truckApiModel.truckId = truck.Id.ToString();
+                                        truckApiModel.truckStatus = truck.status; // "Not Assigned";// truck.status;
+                                        truckApiModel.truckLocationLat = truck.Lat;
+                                        truckApiModel.truckLocationLong = truck.Long;
+                                        //truckApiModel.truckLastCheck = "";//truck.chec
+                                        truckApiModel.truckLastLocation = truck.Location;
+                                        truckApiModel.truckModel = truck.Model;
+                                        truckApiModel.truckYear = truck.Year;
+                                        truckApiModel.truckManufacturer = truck.TruckManufacturer;
+                                        truckApiModel.truckChassis = truck.Chassis;
+                                        truckApiModel.truckEngine = truck.Engine;
+                                        truckApiModel.truckLicenseNumber = truck.LicenceNumber;
+                                        truckApiModel.truckPhoneNumber = truck.PhoneNumber;
+                                        truckApiModel.deviceId = truck.DeviceId;
+
+                                        return Ok(new { flag = true, Message = UserMessage.truckReplaced[model.languageId], Data = UserMessage.roadTruckReplaced[model.languageId] });
+                                    }
+                                    return Ok(new { flag = true, Message = UserMessage.truckReplaced[model.languageId], Data = UserMessage.roadTruckReplaced[model.languageId] });
+                                }
+                                else
+                                {
+                                    var Event = _tripLogService.CreateEndRoadMaintenanceAsync(model).Result;
+                                    if (Event)
+                                    {
+                                        return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = "" });
+                                    }
+                                }
+
+
                             }
+
+                           
                             return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[model.languageId], Data = 0 });
                         }
                         else if (model.type.Trim() == "Ban".Trim())
@@ -692,7 +766,6 @@ namespace FleetM360_WebApi.Controllers
                     var take5APIData = await _tripService.GetTake5DataForMobile(loginModel);
                     if (take5APIData != null)
                     {
-                        //return Ok(new { Data = groupedTrips, Message = "Successful Process" });
                         return Ok(new { flag = true, Message = UserMessage.Done[loginModel.languageId], Data = take5APIData });
                     }
                     else
@@ -701,7 +774,6 @@ namespace FleetM360_WebApi.Controllers
                     }
                 }
             }
-            // return BadRequest(new { Data = 0, Message = "رقم المستخدم أو كلمة السر خطأ" });
             return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[loginModel.languageId], Data = 0 }); // FailedAccount
         }
 
@@ -732,30 +804,41 @@ namespace FleetM360_WebApi.Controllers
                             };
                            
                             var actuallocations =await _context.ActualTripLocations.Where(b => b.PlannedTripLocationId == model.tripLocationId).OrderBy(b => b.Id).LastOrDefaultAsync();
-                            if(actuallocations != null)
+                            var planned=await _context.PlannedTripLocations.Where(t=>t.IsVisible==true && t.Id == model.tripLocationId).FirstOrDefaultAsync();
+                            if(planned != null)
                             {
-                                if (actuallocations.Remain == 0)
+                                if(planned.locationStatus==false) //(actuallocations.Remain == 0)
                                 {
-                                    var subLocations =await _context.PlannedTripLocations.Where(t => t.IsVisible == true && t.TripNumber == actuallocations.TripNumber && t.ParentTrip==actuallocations.ParentTrip && t.Type== "Dest").ToListAsync();
+                                    var subLocations =await _context.PlannedTripLocations.Where(t => t.IsVisible == true && t.TripNumber == actuallocations.TripNumber && t.ParentTrip==actuallocations.ParentTrip).ToListAsync();
                                     if(subLocations != null)
                                     {
                                         if (subLocations.Count > 0)
                                         {
                                             foreach (var location in subLocations)
                                             {
-                                                var actuallocation = _context.ActualTripLocations.Where(b => b.PlannedTripLocationId == model.tripLocationId).OrderBy(b => b.Id).LastOrDefault();
-                                                if (actuallocation != null)
+                                                //var actuallocation = _context.ActualTripLocations.Where(b => b.PlannedTripLocationId == location.Id).OrderBy(b => b.Id).LastOrDefault();
+                                                //if (actuallocation != null)
+                                                //{
+                                                //    if (actuallocation.Remain > 0 )
+                                                //    {
+                                                //        subTripFlag = false;
+                                                //        parentFlag = false;
+                                                //        break;
+                                                //    }
+                                                //    else
+                                                //    {
+                                                //        subTripFlag = true;
+                                                //    }
+                                                //}
+                                                if (location.locationStatus==true)
                                                 {
-                                                    if (actuallocation.Remain > 0)
-                                                    {
-                                                        subTripFlag = false;
-                                                        parentFlag = false;
-                                                        break;
-                                                    }
-                                                    else
-                                                    {
-                                                        subTripFlag = true;
-                                                    }
+                                                    subTripFlag = false;
+                                                    parentFlag = false;
+                                                    break;
+                                                }
+                                                else
+                                                {
+                                                    subTripFlag = true;
                                                 }
                                             }
                                         }
@@ -1016,6 +1099,47 @@ namespace FleetM360_WebApi.Controllers
            
             //return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[loginModel.languageId], Data = 0 }); // FailedAccount
         }
+
+        [HttpPost("getWeightInfo")]
+        public async Task<ActionResult> getWeightInfo(UserApiModel loginModel)
+        {
+            DriverModel driver = _driverService.GetDriver(loginModel.UserNumber);
+            if (driver != null)
+            {
+                var trip = _context.Trips.Where(a => a.Id == Convert.ToInt64(loginModel.tripId)).FirstOrDefault();
+                if (trip != null)
+                {
+                    ApplicationUser aspNetUser = await _userManager.FindByIdAsync(driver.UserId);
+                    if (aspNetUser != null)
+                    {
+                        WeightDataApiModel weightDataApiModel = new WeightDataApiModel();
+                        weightDataApiModel.emptyWeight=new WeightApiModel();
+                        weightDataApiModel.grossWeight=new WeightApiModel();
+                        var tripLogg = await _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.TripNumber == trip.TripNumber && t.Event == "GrossWeight" && t.IsVisible == true).FirstOrDefaultAsync();
+                        if (tripLogg != null)
+                        {
+                            weightDataApiModel.grossWeight.startTime = tripLogg.CreatedDate;
+                            weightDataApiModel.grossWeight.endTime = tripLogg.CreatedDate;
+                            weightDataApiModel.grossWeight.weight = 96.480;
+                        }
+                        var tripLog = await _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.TripNumber == trip.TripNumber && t.Event == "EmptyWeight" && t.IsVisible == true).FirstOrDefaultAsync();
+                        if (tripLog != null)
+                        {
+                            weightDataApiModel.emptyWeight.startTime = tripLog.CreatedDate;
+                            weightDataApiModel.emptyWeight.endTime = tripLog.CreatedDate;
+                            weightDataApiModel.emptyWeight.weight = 26.480;
+                        }
+                        return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = weightDataApiModel });
+                    }
+                }
+                else
+                {
+                    return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
+                }
+            }
+            return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
+        }
+
         [HttpPost("test")]
         public async Task<ActionResult> test([Bind(include: "userNumber")] sendMaintenanceEndTime loginModel)
         {
@@ -1043,5 +1167,67 @@ namespace FleetM360_WebApi.Controllers
         }
 
 
+
+        [HttpPost("testSapTrip")]
+        public async Task<ActionResult> testSapTrip(SapTripVM model)
+        {
+            
+            if (model != null)
+            {
+                SapTrip trip = new SapTrip()
+                {
+                    TripNumber =Convert.ToInt64(model.TripNumber),
+                    Qty = Convert.ToInt64(model.Qty),
+                    TruckNumber = model.TruckNumber,
+                    jobsiteNumber = model.jobsiteNumber,
+                    IsDelted=false,
+                    IsVisible=true,
+                    CreatedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    customerNumber = model.customerNumber,
+                    materialNumber = model.materialNumber,
+                    departureDate=model.departureDate,
+                    ArrivedDate=model.ArrivedDate,
+                };
+                _context.SapTrips.Add(trip);
+                await _context.SaveChangesAsync();
+                return Ok(new { flag = true, Message = "Done Done ", Data = trip });
+            }
+            //return BadRequest(new { Data = 0, Message = "رقم المستخدم أو كلمة السر خطأ" });
+            return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[1], Data = 0 }); // FailedAccount
+        }
+
+        [HttpPost("sendTripWeight")]
+        public async Task<ActionResult> sendTripWeight(WeightSapModel model)
+        {
+
+            if (model != null)
+            {
+                var tripp= await _context.Trips.Where(t=>t.IsVisible && t.TripNumber==Convert.ToInt64(model.TripNumber)).ToListAsync();
+                TripWeight trip = new TripWeight()
+                {
+                    TripNumber=Convert.ToInt64(model.TripNumber),
+                    ParentTrip=1,
+                    TruckNumber=model.TruckNumber,
+                    CreatedBy="Sap",
+                    Weight=model.weight,
+                    Type=model.Type,
+                    IsDelted=false,
+                    IsVisible=true,
+                    CreatedDate= DateTime.Now,
+                    UpdatedDate= DateTime.Now
+                };
+                _context.tripWeights.Add(trip);
+                await _context.SaveChangesAsync();
+                return Ok(new { flag = true, Message = "Done Done ", Data = trip });
+            }
+            //return BadRequest(new { Data = 0, Message = "رقم المستخدم أو كلمة السر خطأ" });
+            //send to admin
+            return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[1], Data = 0 }); // FailedAccount
+        }
+
+
+
     }
+   
 }

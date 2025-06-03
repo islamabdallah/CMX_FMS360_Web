@@ -1,13 +1,19 @@
-﻿using FleetM360_DAL.Models;
+﻿using FleetM360_DAL.Migrations.ApplicationDB;
+using FleetM360_DAL.Models;
+using FleetM360_DAL.Models.MasterModels;
+using FleetM360_DAL.Repository.EntityFramework;
 using FleetM360_PLL.APIViewModels.Drivers;
 using FleetM360_PLL.APIViewModels.Trucks;
 using FleetM360_PLL.Message;
 using FleetM360_PLL.Services.Contracts;
 using FleetM360_PLL.Services.Implementation;
 using FleetM360_PLL.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace FleetM360_WebApi.Controllers
 {
@@ -23,13 +29,14 @@ namespace FleetM360_WebApi.Controllers
         private readonly ILogger<TruckAPIController> _logger;
         private readonly ITruckService _truckService;
         private readonly IEmployeeService _employeeService;
+        private readonly ApplicationDBContext _context;
 
         public TruckAPIController(IDriverService driverService,
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
             ITripService tripService,
             ILogger<TruckAPIController> logger,
-            ITruckService truckService,
+            ITruckService truckService, ApplicationDBContext context,
             IEmployeeService employeeService)
         {
             _driverService = driverService;
@@ -39,6 +46,7 @@ namespace FleetM360_WebApi.Controllers
             _logger = logger;
             _truckService = truckService;
             _employeeService = employeeService;
+            _context = context;
         }
         [HttpGet("pendingTrucks")]
         public async Task<ActionResult> pendingTrucks()
@@ -178,6 +186,69 @@ namespace FleetM360_WebApi.Controllers
                 return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[truckModel.languageId], Data = 0 });
             }
             return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[truckModel.languageId], Data = 0 });
+        }
+
+        
+        [HttpPost("ShowTenNotifications")]
+        public async Task<ActionResult> ShowTenNotifications(NotificationUserModel model)
+        {
+            try
+            {
+                List<NotificationAPIModel> notificationAPIModels = new List<NotificationAPIModel>();
+                var truckk = _truckService.GetTruck(Convert.ToInt64(model.truckId));
+                if (truckk == null)
+                {
+                    return BadRequest(new { flag = false, Message = truckMessage.InvalidTruck[model.languageId], Data = 0 });
+                }
+                var userNotificationModels = await _context.TruckNotifications.Where(UN => UN.TruckNumber == truckk.TruckNumber).ToListAsync();
+                List<NotificationAPIModel> NotificationAPIModels = new List<NotificationAPIModel>();
+                if (userNotificationModels != null)
+                {
+                    if (userNotificationModels.Count > 50)
+                    {
+                        userNotificationModels = userNotificationModels.TakeLast(10).ToList();
+                    }
+                   
+                    foreach (TruckNotification userNotificationModel in userNotificationModels)
+                    {
+                        NotificationAPIModel NotificationAPIModel = new NotificationAPIModel()
+                        {
+                            notificationId = (int)userNotificationModel.Id,
+                            notificationTitle = model.languageId == 1 ? userNotificationModel.notificationTitle : userNotificationModel.notificationTitleAR,
+                            notificationDescription = model.languageId == 1 ? userNotificationModel.notificationDescription : userNotificationModel.notificationDescriptionAR,
+                            notificationTime = userNotificationModel.CreatedDate,
+                            notificationStatus = userNotificationModel.Seen,
+                        };
+                        NotificationAPIModels.Add(NotificationAPIModel);    
+                       
+                    }
+                }
+                var NotificationModels = await _context.TruckNotifications.Where(UN => UN.TruckNumber == truckk.TruckNumber && UN.Seen == false).ToListAsync();
+                if (NotificationModels != null)
+                {
+                    if (NotificationModels.Count > 0)
+                    {
+                        foreach (TruckNotification NotificationModel in NotificationModels)
+                        {
+                            NotificationModel.Seen = true;
+                            NotificationModel.UpdatedDate = DateTime.Now;
+                            _context.TruckNotifications.Update(NotificationModel);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+
+                   
+                }
+
+
+                return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = NotificationAPIModels });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[model.languageId], Data = 0 });
+
+            }
+
         }
     }
 }

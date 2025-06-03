@@ -17,13 +17,20 @@ using FleetM360_PLL;
 using System.Globalization;
 using FleetM360_PLL.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Builder.Extensions;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using System.Net;
 
 
 
 var builder = WebApplication.CreateBuilder(args);
-//var culture = new CultureInfo("en-US");
-//CultureInfo.DefaultThreadCurrentCulture = culture;
-//CultureInfo.DefaultThreadCurrentUICulture = culture;
+//System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
+ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+ServicePointManager.ServerCertificateValidationCallback +=
+    (sender, certificate, chain, sslPolicyErrors) => true;
+
 
 builder.Services.AddDbContext<APPDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -40,6 +47,17 @@ var mapperConfig = new MapperConfiguration(cfg =>
 {
     cfg.AddProfile(new MappingProfile());
 });
+var firebasePath = Path.Combine(AppContext.BaseDirectory, "App_Data", "firebase-adminsdk.json");
+
+
+if (FirebaseApp.DefaultInstance == null)
+{
+    FirebaseApp.Create(new AppOptions
+    {
+        Credential = GoogleCredential.FromFile(firebasePath)
+    });
+}
+
 
 IMapper mapper = mapperConfig.CreateMapper();
 builder.Services.AddSingleton(mapper);
@@ -61,6 +79,8 @@ builder.Services.AddScoped<ITermsConditionsService, TermsConditionsService>();
 builder.Services.AddScoped<IPreCheckService, PreCheckService>();
 builder.Services.AddScoped<ITripLogService, TripLogService>();
 builder.Services.AddScoped<IRiskService, RiskService>();
+builder.Services.AddScoped<IFirebaseNotificationService, FirebaseNotificationService>();
+
 
 // Dependency Injection
 builder.Services.AddSingleton<InMemoryWebSocketStore>();
@@ -80,27 +100,6 @@ builder.Services.Configure<MvcOptions>(options =>
     options.AllowEmptyInputInBodyModelBinding = true;
 });
 
-//builder.Services.AddAuthentication(options =>
-//{
-//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-//    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-//})
-//.AddJwtBearer(options =>
-//{
-//    options.RequireHttpsMetadata = false;
-//    options.SaveToken = true;
-//    options.TokenValidationParameters = new TokenValidationParameters
-//    {
-//        ValidateIssuerSigningKey = true,
-//        IssuerSigningKey = new SymmetricSecurityKey(key),
-//        ValidateIssuer = true,
-//        ValidIssuer = jwtSettings["Issuer"],
-//        ValidateAudience = true,
-//        ValidAudience = jwtSettings["Audience"],
-//        ValidateLifetime = true,
-//        ClockSkew = TimeSpan.Zero
-//    };
-//});
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Secret"]);
@@ -135,25 +134,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-//var jwtIssuer = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
-//var jwtKey = builder.Configuration.GetSection("Jwt:Secret").Get<string>();
-//builder.Services.AddAuthentication();
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//.AddJwtBearer(authenticationScheme: JwtBearerDefaults.AuthenticationScheme,
-//   options =>
-//   {
-//       options.TokenValidationParameters = new TokenValidationParameters
-//       {
-//           ValidateIssuer = true,
-//           ValidateAudience = true,
-//           ValidateLifetime = true,
-//           ValidateIssuerSigningKey = true,
-//           ValidIssuer = jwtIssuer,
-//           ValidAudience = jwtIssuer,
-//           IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-//           ClockSkew = TimeSpan.Zero
-//       };
-//   });
 
 builder.Services.AddAuthorization();
 

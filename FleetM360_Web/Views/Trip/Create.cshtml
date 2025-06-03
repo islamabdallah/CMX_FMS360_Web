@@ -4,27 +4,47 @@
 @* <div class="container mt-3"> *@
     <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Trip /</span> Create Trip</h4>
 
-    <p>
-        you can assign trip or sub trip
-    </p>
+   
 <div class="row">
-    <div class="col-lg-8 mb-4 order-0">
+    <div class="col-lg-12 mb-4 order-0">
         <div class="card">
             <div class="d-flex align-items-end row">
                 <div class="col-sm-7">
                     <div class="card-body">
-                        <h5 class="card-title text-primary">Congratulations John! 🎉</h5>
+                       @*  <form class="row g-3" asp-action="Create"> *@
+                        @using (Html.BeginForm("Create", "Trip", FormMethod.Post, new { id = "truckForm" }))
+                            {
+                               
+                            
+                        <h5 class="card-title text-primary">Truck Details</h5>
                         <p class="mb-4">
                             You have done <span class="fw-bold">72%</span> more sales today. Check your new badge in
                             your profile.
                         </p>
+                        <div class="col-6 col-lg-4 mb-3">
+                            <label for="TruckNumber" class="form-label">Example select</label>
+                           @*  <select onchange="test()" asp-for="TruckId" id="TruckId" class="form-select" aria-label="Default select example" asp-items="@(new SelectList(Model.Trucks, "Id", "TruckNumber"))">
+                                <option value="-1" selected disabled>Select Truck</option>
+                            </select> *@
+                                @Html.DropDownListFor(
+                                         model => model.TruckId,
+                                         new SelectList(Model.Trucks, "Id", "TruckNumber"),
+                                         "Select Truck",
+                                         new { @class = "form-select", @id = "TruckId", onchange = "this.form.submit();" }
+                                         )
+                        </div>
 
-                        <a href="javascript:;" class="btn btn-sm btn-outline-primary">View Badges</a>
+                           
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Add</button>
+                            </div>
+                            }
+                        @* </form> *@
                     </div>
                 </div>
                 <div class="col-sm-5 text-center text-sm-left">
                     <div class="card-body pb-0 px-0 px-md-4">
-                        <img src="../assets/img/illustrations/man-with-laptop-light.png"
+                        <img src="~/sneat/assets/img/illustrations/man-with-laptop-light.png"
                              height="140"
                              alt="View Badge User"
                              data-app-dark-img="illustrations/man-with-laptop-dark.png"
@@ -34,282 +54,307 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-4 col-md-4 order-1">
-        <div class="row">
-            <div class="col-lg-6 col-md-12 col-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="card-title d-flex align-items-start justify-content-between">
-                            <div class="avatar flex-shrink-0">
-                                <img src="../assets/img/icons/unicons/chart-success.png"
-                                     alt="chart success"
-                                     class="rounded" />
-                            </div>
-                            <div class="dropdown">
-                                <button class="btn p-0"
-                                        type="button"
-                                        id="cardOpt3"
-                                        data-bs-toggle="dropdown"
-                                        aria-haspopup="true"
-                                        aria-expanded="false">
-                                    <i class="bx bx-dots-vertical-rounded"></i>
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
-                                    <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                                    <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="fw-semibold d-block mb-1">Profit</span>
-                        <h3 class="card-title mb-2">$12,628</h3>
-                        <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +72.80%</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6 col-md-12 col-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="card-title d-flex align-items-start justify-content-between">
-                            <div class="avatar flex-shrink-0">
-                                <img src="../assets/img/icons/unicons/wallet-info.png"
-                                     alt="Credit Card"
-                                     class="rounded" />
-                            </div>
-                            <div class="dropdown">
-                                <button class="btn p-0"
-                                        type="button"
-                                        id="cardOpt6"
-                                        data-bs-toggle="dropdown"
-                                        aria-haspopup="true"
-                                        aria-expanded="false">
-                                    <i class="bx bx-dots-vertical-rounded"></i>
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt6">
-                                    <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                                    <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                </div>
-                            </div>
-                        </div>
-                        <span>Sales</span>
-                        <h3 class="card-title text-nowrap mb-1">$4,679</h3>
-                        <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +28.42%</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+   
     <!-- Total Revenue -->
-    <div class="col-12 col-lg-8 order-2 order-md-3 order-lg-2 mb-4">
+    <div class="col-12 col-lg-12 order-2 order-md-3 order-lg-2 mb-4">
         <div class="card">
             <div class="row row-bordered g-0">
-                <div class="col-md-8">
-                    <h5 class="card-header m-0 me-2 pb-3">Create ParenTrep</h5>
-                    <div id="totalRevenueChart" class="px-2"></div>
-                </div>
-                <div class="col-md-4">
-                    <form class="row g-3">
-                        <div class="col-md-4">
-                            <label for="inputEmail4" class="form-label">Select Truck</label>
-                            <select onchange="test()" asp-for="TruckNumber" id="TruckId" class="form-control select2bs4" asp-items="@(new SelectList(Model.Trucks, "TruckNumber", "TruckNumber"))">
-                                <option value="-1" selected disabled>Select Truck</option>
-                            </select>
+                <div class="col-md-12">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Create Parent Trip</h5>
+                        <small class="text-muted float-end">assign trip to truk</small>
+                    </div>
+                    <div class="card-body">
+                        <form class="row g-3" asp-action="Create">
+                            <div class="col-6 col-lg-4 mb-3">
+                                <label class="form-label" for="basic-icon-default-fullname">Trip Type</label>
+                                <select id="inputState" class="form-select">
+                            <option selected>Select Type...</option>
+                            <option value="1">Cement</option>
+                            <option value="2">Backhauling</option>
+                            <option value="3">Mission</option>
+                        </select>
+                            </div>
+                            <div class="col-6 col-lg-4 mb-3">
+                                <label class="form-label" for="basic-icon-default-fullname">Mission Type</label>
+                                <select id="inputState" class="form-select">
+                                    <option selected>Select Type...</option>
+                                    <option value="3">Transportation</option>
+                                    <option value="4">External Workshop</option>
+                                    <option value="2">Maintainance</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-lg-4 mb-3">
+                                <label class="form-label" for="TruckId">Material</label>
+                                <select asp-for="TruckId" id="TruckId1" class="form-select" aria-label="Default select example" asp-items="@(new SelectList(Model.Trucks, "Id", "TruckNumber"))">
+                                    <option value="-1" selected disabled>Select Truck</option>
+                                </select>
+                               @*  <button type="button" id="clearSelections" class="btn btn-danger">Clear Selections</button> *@
 
-                            @*  <select id="inputState" class="form-select">
-                <option selected>ChooseTruck...</option>
-                <option value="1">truck123</option>
-                <option value="2">truck124</option>
-                <option value="3">truck125</option>
-                <option value="4">truck126</option>
-            </select> *@
-                        </div>
-                        <div class="col-md-4">
-                            <label for="inputPassword4" class="form-label">Truck Silo information</label><br />
-                            <label for="inputPassword4" class="form-label">truck123 --------------------> silo123</label>
-                            <a class="btn btn-primary">assign silo</a>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="inputEmail4" class="form-label">Select Silo</label>
-                            <select id="inputState" class="form-select">
-                                <option selected>Choose Silo...</option>
-                                <option value="1">Silo123</option>
-                                <option value="2">Silo124</option>
-                                <option value="3">Silo125</option>
-                                <option value="4">Silo126</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="inputEmail4" class="form-label">Select Driver</label>
-                            <select id="inputState" class="form-select">
-                                <option selected>Choose Driver...</option>
-                                <option value="1">Driver123</option>
-                                <option value="2">Driver124</option>
-                                <option value="3">Driver125</option>
-                                <option value="4">Driver126</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="inputEmail4" class="form-label">Select Role</label>
-                            <select id="inputState" class="form-select">
-                                <option selected>Choose Role...</option>
-                                <option value="1">Loading</option>
-                                <option value="2">OnRoad</option>
-                                <option value="3">CooDriver</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="inputEmail4" class="form-label">Assigned Drivers</label>
-                            <table class="w-100">
-                                <tr>
-                                    <th>Driver</th>
-                                    <th>Role</th>
-                                </tr>
-                                <tbody>
-                                    <tr>
-                                        <td>Driver123</td>
-                                        <td>Loading</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Driver124</td>
-                                        <td>OnRoad</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Driver125</td>
-                                        <td>CooDriver</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="col-4">
-                            <label for="inputAddress" class="form-label">Trip Type</label>
-                            <select id="inputState" class="form-select">
-                                <option selected>Select Type...</option>
-                                <option value="1">Cement</option>
-                                <option value="2">Single Backhauling</option>
-                                <option value="3">Multi backhauling</option>
-                                <option value="4">Mission</option>
-                            </select>
-                        </div>
-                        <div class="col-4">
-                            <label for="inputAddress2" class="form-label">Material</label>
-                            <input type="text" class="form-control" id="inputAddress2" placeholder="Cement, RDF, or others">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="inputCity" class="form-label">QTY</label>
-                            <input type="text" class="form-control" id="inputCity">
-                        </div>
-                        <div class="col-6">
-                            <label for="inputAddress" class="form-label">Source</label>
-                            <select id="inputState" class="form-select">
-                                <option selected>Select Type...</option>
-                                <option value="1">Site1</option>
-                                <option value="2">Site2</option>
-                                <option value="3">Site3</option>
-                                <option value="4">Site4</option>
-                            </select>
-                        </div>
-                        <div class="col-6">
-                            <label for="inputAddress" class="form-label">Destination</label>
-                            <select id="inputState" class="form-select">
-                                <option selected>Select Type...</option>
-                                <option value="1">Site1</option>
-                                <option value="2">Site2</option>
-                                <option value="3">Site3</option>
-                                <option value="4">Site4</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary">Add</button>
-                        </div>
-                    </form>
-
+                            </div>
+                            <div class="col-6 col-lg-4 mb-3">
+                                <label class="form-label" for="basic-icon-default-company">Driver</label>
+                                <select asp-for="TruckId" id="TruckId1" class="form-select" aria-label="Default select example" asp-items="@(new SelectList(Model.Trucks, "Id", "TruckNumber"))">
+                                    <option value="-1" selected disabled>Driver</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-lg-4 mb-3">
+                                <label class="form-label" for="basic-icon-default-email">Email</label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="bx bx-envelope"></i></span>
+                                    <input type="text"
+                                           id="basic-icon-default-email"
+                                           class="form-control"
+                                           placeholder="john.doe"
+                                           aria-label="john.doe"
+                                           aria-describedby="basic-icon-default-email2" />
+                                    <span id="basic-icon-default-email2" class="input-group-text">example.com</span>
+                                </div>
+                                <div class="form-text">You can use letters, numbers & periods</div>
+                            </div>
+                            <div class="col-6 col-lg-4 mb-3">
+                                <label class="form-label" for="basic-icon-default-phone">Phone No</label>
+                                <div class="input-group input-group-merge">
+                                    <span id="basic-icon-default-phone2" class="input-group-text">
+                                        <i class="bx bx-phone"></i>
+                                    </span>
+                                    <input type="text"
+                                           id="basic-icon-default-phone"
+                                           class="form-control phone-mask"
+                                           placeholder="658 799 8941"
+                                           aria-label="658 799 8941"
+                                           aria-describedby="basic-icon-default-phone2" />
+                                </div>
+                            </div>
+                            <div class="col-6 col-lg-4 mb-3">
+                                <label class="form-label" for="basic-icon-default-message">Message</label>
+                                <div class="input-group input-group-merge">
+                                    <span id="basic-icon-default-message2" class="input-group-text">
+                                        <i class="bx bx-comment"></i>
+                                    </span>
+                                    <textarea id="basic-icon-default-message"
+                                              class="form-control"
+                                              placeholder="Hi, Do you have a moment to talk Joe?"
+                                              aria-label="Hi, Do you have a moment to talk Joe?"
+                                              aria-describedby="basic-icon-default-message2"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-6 col-lg-4 mb-3">
+                                <label for="exampleFormControlSelect1" class="form-label">Example select</label>
+                                <select class="form-select" id="exampleFormControlSelect1" aria-label="Default select example">
+                                    <option selected>Open this select menu</option>
+                                    <option value="1">One</option>
+                                    <option value="2">Two</option>
+                                    <option value="3">Three</option>
+                                </select>
+                            </div>
+                           @*  <button type="submit" class="btn btn-primary">Send</button> *@
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Add</button>
+                            </div>
+                        </form>
+                    </div>
                    
                 </div>
+              
             </div>
         </div>
     </div>
     <!--/ Total Revenue -->
-    <div class="col-12 col-md-8 col-lg-4 order-3 order-md-2">
-        <div class="row">
-            <div class="col-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="card-title d-flex align-items-start justify-content-between">
-                            <div class="avatar flex-shrink-0">
-                                <img src="../assets/img/icons/unicons/paypal.png" alt="Credit Card" class="rounded" />
-                            </div>
-                            <div class="dropdown">
-                                <button class="btn p-0"
-                                        type="button"
-                                        id="cardOpt4"
-                                        data-bs-toggle="dropdown"
-                                        aria-haspopup="true"
-                                        aria-expanded="false">
-                                    <i class="bx bx-dots-vertical-rounded"></i>
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt4">
-                                    <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                                    <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="d-block mb-1">Payments</span>
-                        <h3 class="card-title text-nowrap mb-2">$2,456</h3>
-                        <small class="text-danger fw-semibold"><i class="bx bx-down-arrow-alt"></i> -14.82%</small>
-                    </div>
-                </div>
+   
+</div>
+
+<div class="row">
+    <div class="col-xl col-lg-12">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Basic Layout</h5>
+                <small class="text-muted float-end">Default label</small>
             </div>
-            <div class="col-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="card-title d-flex align-items-start justify-content-between">
-                            <div class="avatar flex-shrink-0">
-                                <img src="../assets/img/icons/unicons/cc-primary.png" alt="Credit Card" class="rounded" />
-                            </div>
-                            <div class="dropdown">
-                                <button class="btn p-0"
-                                        type="button"
-                                        id="cardOpt1"
-                                        data-bs-toggle="dropdown"
-                                        aria-haspopup="true"
-                                        aria-expanded="false">
-                                    <i class="bx bx-dots-vertical-rounded"></i>
-                                </button>
-                                <div class="dropdown-menu" aria-labelledby="cardOpt1">
-                                    <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                                    <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="fw-semibold d-block mb-1">Transactions</span>
-                        <h3 class="card-title mb-2">$14,857</h3>
-                        <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +28.14%</small>
+            <div class="card-body">
+                <form>
+                    <div class="col-md-4">
+                        <label for="inputEmail4" class="form-label">Select Truck</label>
+                        <select onchange="test()" asp-for="TruckNumber" id="TruckId" class="form-control select2bs4" asp-items="@(new SelectList(Model.Trucks, "TruckNumber", "TruckNumber"))">
+                            <option value="-1" selected disabled>Select Truck</option>
+                        </select>
                     </div>
-                </div>
+                    <div class="col-md-4">
+                        <label for="inputPassword4" class="form-label">Truck Silo information</label><br />
+                        <label for="inputPassword4" class="form-label">truck123 --------------------> silo123</label>
+                        <a class="btn btn-primary">assign silo</a>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="inputEmail4" class="form-label">Select Silo</label>
+                        <select id="inputState" class="form-select">
+                            <option selected>Choose Silo...</option>
+                            <option value="1">Silo123</option>
+                            <option value="2">Silo124</option>
+                            <option value="3">Silo125</option>
+                            <option value="4">Silo126</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="inputEmail4" class="form-label">Select Driver</label>
+                        <select id="inputState" class="form-select">
+                            <option selected>Choose Driver...</option>
+                            <option value="1">Driver123</option>
+                            <option value="2">Driver124</option>
+                            <option value="3">Driver125</option>
+                            <option value="4">Driver126</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="inputEmail4" class="form-label">Select Role</label>
+                        <select id="inputState" class="form-select">
+                            <option selected>Choose Role...</option>
+                            <option value="1">Loading</option>
+                            <option value="2">OnRoad</option>
+                            <option value="3">CooDriver</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="inputEmail4" class="form-label">Assigned Drivers</label>
+                        <table class="w-100">
+                            <tr>
+                                <th>Driver</th>
+                                <th>Role</th>
+                            </tr>
+                            <tbody>
+                                <tr>
+                                    <td>Driver123</td>
+                                    <td>Loading</td>
+                                </tr>
+                                <tr>
+                                    <td>Driver124</td>
+                                    <td>OnRoad</td>
+                                </tr>
+                                <tr>
+                                    <td>Driver125</td>
+                                    <td>CooDriver</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-4">
+                        <label for="inputAddress" class="form-label">Trip Type</label>
+                        
+                    </div>
+                    <div class="col-4">
+                        <label for="inputAddress2" class="form-label">Material</label>
+                        <input type="text" class="form-control" id="inputAddress2" placeholder="Cement, RDF, or others">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="inputCity" class="form-label">QTY</label>
+                        <input type="text" class="form-control" id="inputCity">
+                    </div>
+                    <div class="col-6">
+                        <label for="inputAddress" class="form-label">Source</label>
+                        <select id="inputState" class="form-select">
+                            <option selected>Select Type...</option>
+                            <option value="1">Site1</option>
+                            <option value="2">Site2</option>
+                            <option value="3">Site3</option>
+                            <option value="4">Site4</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label for="inputAddress" class="form-label">Destination</label>
+                        <select id="inputState" class="form-select">
+                            <option selected>Select Type...</option>
+                            <option value="1">Site1</option>
+                            <option value="2">Site2</option>
+                            <option value="3">Site3</option>
+                            <option value="4">Site4</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </div>
+                </form>
             </div>
-            <!-- </div>
-            <div class="row"> -->
-            <div class="col-12 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between flex-sm-row flex-column gap-3">
-                            <div class="d-flex flex-sm-column flex-row align-items-start justify-content-between">
-                                <div class="card-title">
-                                    <h5 class="text-nowrap mb-2">Profile Report</h5>
-                                    <span class="badge bg-label-warning rounded-pill">Year 2021</span>
-                                </div>
-                                <div class="mt-sm-auto">
-                                    <small class="text-success text-nowrap fw-semibold"><i class="bx bx-chevron-up"></i> 68.2%</small>
-                                    <h3 class="mb-0">$84,686k</h3>
-                                </div>
-                            </div>
-                            <div id="profileReportChart"></div>
+        </div>
+    </div>
+    <div class="col-xl">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Basic with Icons</h5>
+                <small class="text-muted float-end">Merged input group</small>
+            </div>
+            <div class="card-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label" for="basic-icon-default-fullname">Trip Type</label>
+                       <select id="inputState" class="form-select">
+                            <option selected>Select Type...</option>
+                            <option value="1">Cement</option>
+                            <option value="2">Single Backhauling</option>
+                            <option value="3">Multi backhauling</option>
+                            <option value="4">Mission</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="basic-icon-default-company">Company</label>
+                        <div class="input-group input-group-merge">
+                            <span id="basic-icon-default-company2" class="input-group-text">
+                                <i class="bx bx-buildings"></i>
+                            </span>
+                            <input type="text"
+                                   id="basic-icon-default-company"
+                                   class="form-control"
+                                   placeholder="ACME Inc."
+                                   aria-label="ACME Inc."
+                                   aria-describedby="basic-icon-default-company2" />
                         </div>
                     </div>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="basic-icon-default-email">Email</label>
+                        <div class="input-group input-group-merge">
+                            <span class="input-group-text"><i class="bx bx-envelope"></i></span>
+                            <input type="text"
+                                   id="basic-icon-default-email"
+                                   class="form-control"
+                                   placeholder="john.doe"
+                                   aria-label="john.doe"
+                                   aria-describedby="basic-icon-default-email2" />
+                            <span id="basic-icon-default-email2" class="input-group-text">example.com</span>
+                        </div>
+                        <div class="form-text">You can use letters, numbers & periods</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="basic-icon-default-phone">Phone No</label>
+                        <div class="input-group input-group-merge">
+                            <span id="basic-icon-default-phone2" class="input-group-text">
+                                <i class="bx bx-phone"></i>
+                            </span>
+                            <input type="text"
+                                   id="basic-icon-default-phone"
+                                   class="form-control phone-mask"
+                                   placeholder="658 799 8941"
+                                   aria-label="658 799 8941"
+                                   aria-describedby="basic-icon-default-phone2" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="basic-icon-default-message">Message</label>
+                        <div class="input-group input-group-merge">
+                            <span id="basic-icon-default-message2" class="input-group-text">
+                                <i class="bx bx-comment"></i>
+                            </span>
+                            <textarea id="basic-icon-default-message"
+                                      class="form-control"
+                                      placeholder="Hi, Do you have a moment to talk Joe?"
+                                      aria-label="Hi, Do you have a moment to talk Joe?"
+                                      aria-describedby="basic-icon-default-message2"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </form>
             </div>
         </div>
     </div>
 </div>
+           
    
     <br />
     <div class="card">
@@ -394,20 +439,41 @@
     </div>
 
 
-<script>
-    function test() {
-        console.log("welcome");
-        var ddlsource = document.getElementById("TruckId").value;
-        console.log(ddlsource);
-        if (ddlsource != -1) {
-            var url = '@Url.Content("../")' + "Trip/IsTruckAvaliable";
-            $.getJSON(url, { truckId: ddlsource }, function (data) {
-                if (data != null) {
-                    alert(data);
-                    //$('#DriverId').val('-1').change();
-                    $("#TruckId").prop("selectedIndex", -1);
-                }
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#TruckId1').select2({
+                placeholder: 'Select trucks',
+                width: '100%'
             });
+        });
+    </script>
+
+    <script>
+        function test() {
+            console.log("welcome");
+            var ddlsource = document.getElementById("TruckId").value;
+            console.log(ddlsource);
+            if (ddlsource != -1) {
+                var url = '@Url.Content("../")' + "Trip/IsTruckAvaliable";
+                $.getJSON(url, { truckId: ddlsource }, function (data) {
+                    if (data != null) {
+                        alert(data);
+                        //$('#DriverId').val('-1').change();
+                        $("#TruckId").prop("selectedIndex", -1);
+                    }
+                });
+            }
         }
-    }
-</script>
+    </script>
+    <script>
+            document.getElementById("clearSelections").addEventListener("click", function() {
+            var selectElement = document.getElementById("TruckId1");
+            for (var i = 0; i < selectElement.options.length; i++) {
+                selectElement.options[i].selected = false;
+            }
+        });
+
+    </script>
+}

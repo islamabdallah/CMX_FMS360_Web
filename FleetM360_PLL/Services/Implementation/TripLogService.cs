@@ -231,55 +231,90 @@ namespace FleetM360_PLL.Services.Implementation
                         var trip = _context.Trips.Where(a => a.Id == Convert.ToInt64(model.tripId)).FirstOrDefault();
                         if (trip != null)
                         {
-                            var Event = _context.LogLookups.Where(t => t.IsVisible == true && t.LogName == "StartRoadMaintenance").FirstOrDefault();
-                            if (Event != null)
+                            if (model.responsibleOption == "السائق")
                             {
-                                TripLog tripLog = new TripLog()
+                                var Event = _context.LogLookups.Where(t => t.IsVisible == true && t.LogName == "StartRoadMaintenance").FirstOrDefault();
+                                if (Event != null)
                                 {
-                                    ParentTrip = trip.ParentTrip,
-                                    TripNumber = trip.TripNumber,
-                                    Event = Event.LogName,
-                                    LogId = Event.Id,
-                                    Lat = model.lat,
-                                    Long = model.lng,
-                                    CreatedBy = driver.DriverNumber.ToString(),
-                                    Date = model.startTime.ToString(),
-                                    Comment = model.driverComment,
-                                    IsDelted = false,
-                                    IsVisible = true,
-                                    CreatedDate = DateTime.Now,
-                                    UpdatedDate = DateTime.Now,
-                                };
-                                _context.TripLogs.Add(tripLog);
-                                await _context.SaveChangesAsync();
-
-                                if (tripLog.Id > 0)
-                                {
-                                    TripRoadMaintenance fuel = new TripRoadMaintenance()
+                                    TripLog tripLog = new TripLog()
                                     {
-                                        userNumber = driver.DriverNumber,
-                                        TripLogId = tripLog.Id,
-                                        truckId = model.truckId,
-                                        tripId = trip.Id,
-                                        causeOfFailureId = Convert.ToInt64(model.causeOfFailure),
-                                        wayOfDealId = Convert.ToInt64(model.wayOfDeal),
-                                        driverComment = model.driverComment,
-                                        lat = model.lat,
-                                        lng = model.lng,
+                                        ParentTrip = trip.ParentTrip,
+                                        TripNumber = trip.TripNumber,
+                                        Event = Event.LogName,
+                                        LogId = Event.Id,
+                                        Lat = model.lat,
+                                        Long = model.lng,
+                                        CreatedBy = driver.DriverNumber.ToString(),
+                                        Date = model.startTime.ToString(),
+                                        Comment = model.driverComment,
                                         IsDelted = false,
                                         IsVisible = true,
                                         CreatedDate = DateTime.Now,
                                         UpdatedDate = DateTime.Now,
                                     };
-                                    _context.TripRoadMaintenances.Add(fuel);
+                                    _context.TripLogs.Add(tripLog);
                                     await _context.SaveChangesAsync();
-                                   
-                                    return true;
+
+                                    if (tripLog.Id > 0)
+                                    {
+                                        TripRoadMaintenance fuel = new TripRoadMaintenance()
+                                        {
+                                            userNumber = driver.DriverNumber,
+                                            TripLogId = tripLog.Id,
+                                            truckId = model.truckId,
+                                            tripId = trip.Id,
+                                            causeOfFailureId = Convert.ToInt64(model.causeOfFailure),
+                                            wayOfDealId = Convert.ToInt64(model.wayOfDeal),
+                                            driverComment = model.driverComment,
+                                            lat = model.lat,
+                                            lng = model.lng,
+                                            IsDelted = false,
+                                            IsVisible = true,
+                                            CreatedDate = DateTime.Now,
+                                            UpdatedDate = DateTime.Now,
+                                        };
+                                        _context.TripRoadMaintenances.Add(fuel);
+                                        await _context.SaveChangesAsync();
+
+                                        return true;
+                                    }
+                                    else
+                                    {
+                                        return false;
+                                    }
                                 }
-                                else
+                            }
+                            else
+                            {
+                                var Eventt = _context.LogLookups.Where(t => t.IsVisible == true && t.LogName == "Maintainance").FirstOrDefault();
+                                if (Eventt != null)
                                 {
-                                    return false;
+                                    TripLog tripLog = new TripLog()
+                                    {
+                                        ParentTrip = trip.ParentTrip,
+                                        TripNumber = trip.TripNumber,
+                                        Event = Eventt.LogName,
+                                        LogId = Eventt.Id,
+                                        Lat = model.lat,
+                                        Long = model.lng,
+                                        CreatedBy = driver.DriverNumber.ToString(),
+                                        Date = model.startTime.ToString(),
+                                        Comment = model.driverComment,
+                                        CreatedDate = DateTime.Now,
+                                        UpdatedDate = DateTime.Now,
+                                        IsDelted = false,
+                                        IsVisible = true
+                                    };
+                                    _context.TripLogs.Add(tripLog);
+                                    await _context.SaveChangesAsync();
+                                    //return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = "" });
                                 }
+                                trip.StageAR = "قيد الفحص";
+                                trip.StageEn = "Under Inspection";
+                                trip.UpdatedDate = DateTime.Now;
+                                _context.Trips.Update(trip);
+                                await _context.SaveChangesAsync();
+                                return true;
                             }
                         }
                         else
@@ -641,9 +676,27 @@ namespace FleetM360_PLL.Services.Implementation
                                 //}
                             }
 
-
+                            var plannedLocation = _context.PlannedTripLocations.Where(a => a.IsVisible == true && a.Id == model.tripLocationId).FirstOrDefault();
+                            var actuallocations = _context.ActualTripLocations.Where(b => b.PlannedTripLocationId == model.tripLocationId).OrderBy(b => b.Id).LastOrDefault();
+                            double lastQuantity = plannedLocation != null ? plannedLocation.Qty : 0;
+                            if (actuallocations != null)
+                            {
+                                lastQuantity = actuallocations.Remain;
+                            }
+                            string logName = "UnLoading";
+                            if(plannedLocation != null)
+                            {
+                                if (plannedLocation.Type == "Dest")
+                                {
+                                    logName = "UnLoading";
+                                }
+                                else
+                                {
+                                    logName = "Loading";
+                                }
+                            }
                             //adding unloading data 
-                             Event = _context.LogLookups.Where(t => t.IsVisible == true && t.LogName == "UnLoading").FirstOrDefault();
+                            Event = _context.LogLookups.Where(t => t.IsVisible == true && t.LogName == logName).FirstOrDefault();
                             if (Event != null)
                             {
                                 TripLog tripLog = new TripLog()
@@ -668,13 +721,7 @@ namespace FleetM360_PLL.Services.Implementation
 
                                 //if (tripLog.Id > 0)
                                 //{
-                                var plannedLocation=_context.PlannedTripLocations.Where(a=>a.IsVisible==true && a.Id==model.tripLocationId && a.Type.Trim()== "Dest".Trim()).FirstOrDefault();
-                                var actuallocations=_context.ActualTripLocations.Where(b=>b.PlannedTripLocationId==model.tripLocationId).OrderBy(b=>b.Id).LastOrDefault();
-                                double lastQuantity=plannedLocation !=null? plannedLocation.Qty:0;
-                                if (actuallocations != null)
-                                {
-                                    lastQuantity = actuallocations.Remain;
-                                }
+                                double remain = lastQuantity - (double)model.unLoading.receivedQty;
                                 ActualTripLocation location = new ActualTripLocation()
                                 {
                                     PlannedTripLocationId = model.tripLocationId,
@@ -682,25 +729,32 @@ namespace FleetM360_PLL.Services.Implementation
                                     ParentTrip = trip.ParentTrip,
                                     TripNumber = trip.TripNumber,
                                     TripLogId = tripLog.Id,
-                                    Type = "Dist",
+                                    Type = plannedLocation.Type,
                                     Lat = (double)model.unLoading.lat,
                                     Long = (double)model.unLoading.lng,
                                     Material = plannedLocation != null ? plannedLocation.Material : "",
                                     Qty = plannedLocation != null ? plannedLocation.Qty : 0,
                                     Received = (double)model.unLoading.receivedQty,
-                                    Remain = lastQuantity-(double)model.unLoading.receivedQty,
+                                    Remain = remain,
                                     Hours = model.unLoading.hours,
                                     Minutes = model.unLoading.minutes,
                                     Seconds = model.unLoading.seconds,
                                     IsDelted = false,
                                     IsVisible = true,
                                     CreatedDate = DateTime.Now,
-                                    UpdatedDate = DateTime.Now,
+                                    UpdatedDate = DateTime.Now
                                 };
                                 _context.ActualTripLocations.Add(location);
                                 await _context.SaveChangesAsync();
+
+                                if(remain==0 || model.unLoading.locationStatus == true || trip.SubTypeId !=1)
+                                {
+                                    plannedLocation.locationStatus = false;
+                                    _context.PlannedTripLocations.Update(plannedLocation);
+                                }
                                
-                                if(model.onSiteRisks != null)
+                                await _context.SaveChangesAsync();
+                                if (model.onSiteRisks != null)
                                 {
                                     if(model.onSiteRisks.Count > 0)
                                     {
@@ -872,7 +926,7 @@ namespace FleetM360_PLL.Services.Implementation
                                         }
                                         else
                                         {
-                                            logName = "ArrivePlant";
+                                            logName = "ArrivePlant";//"ArrivePlant";
                                         }
                                     }
                                 }

@@ -22,5 +22,10 @@ namespace FleetM360_DAL.Models.MasterModels
         public double Long { get; set; }//Sap Number
         public string Material { get; set; }
         public double Qty { get; set; }
+        public string? customerName { get; set; }
+        public string? customerPhoneNumber { get; set; }
+        public string? recipientName { get; set; }
+        public string? recipientPhoneNumber { get; set; }
+        public bool? locationStatus { get; set; }
     }
 }

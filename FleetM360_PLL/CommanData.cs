@@ -50,5 +50,21 @@ namespace FleetM360_PLL
             OffLine = 4
         }
 
+        public enum TripTypes
+        {
+            Cement = 1,
+            Backhualing = 2,
+            MissionWithoutQuantity = 3,
+            MissionWithQuantity = 4
+        }//(TripTypes)statusCode //(TripTypes)2 return Backhualing
+
+        public enum GeneralMaterial
+        {
+            Cement = 1,
+            Backhualing = 2,
+            Mission = 3
+           // Mission = 4
+        }
+
     }
 }

@@ -30,6 +30,5 @@ namespace FleetM360_DAL.Models.MasterModels
         public string? Engine { get; set; }
         public string? PhoneNumber { get; set; }
 
-
     }
 }

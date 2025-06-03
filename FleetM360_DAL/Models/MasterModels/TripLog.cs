@@ -20,5 +20,6 @@ namespace FleetM360_DAL.Models.MasterModels
         public string Date { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
+        public bool? IsConverted { get; set; }
     }
 }

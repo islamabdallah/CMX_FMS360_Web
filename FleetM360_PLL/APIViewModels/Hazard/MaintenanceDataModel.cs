@@ -10,6 +10,7 @@ namespace FleetM360_PLL.APIViewModels.Hazard
     {
         public List<CauseOfTruckFailureModel> causesOfTruckFailure { get; set; }
         public List<WayToDealWithTruckBreakdownsModel> waysToDealWithTruckBreakdowns { get; set; }
+        public List<string> responsibleOptions { get; set; }
     }
     public class CauseOfTruckFailureModel
     {
@@ -28,6 +29,7 @@ namespace FleetM360_PLL.APIViewModels.Hazard
         public int languageId { get; set; }
         public string causeOfFailure { get; set; }//else for stop option
         public string? wayOfDeal { get; set; }
+        public string? responsibleOption { get; set; }
         public string driverComment { get; set; }
         public double lat { get; set; }
         public double lng { get; set; }
@@ -47,5 +49,6 @@ namespace FleetM360_PLL.APIViewModels.Hazard
         public double? lng { set; get; }
         public DateTime? startTime { set; get; }
         public string? type { set; get; }
+        public string? responsibleOption { get; set; }
     }
 }

@@ -21,7 +21,10 @@ namespace FleetM360_DAL.Models.MasterModels
         public string StageAR { get; set; }
         public bool IsCanceled { get; set; }
         public bool IsConverted { get; set; }
+        public bool? MustStart { get; set; }
+        public bool FromPlant { get; set; }
         public double Qty { get; set; }
+        public double? AssignQty { get; set; }
         public DateTime ArrivedDate { get; set; }
 
         public DateTime departureDate { get; set; }

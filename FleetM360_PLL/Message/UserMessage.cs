@@ -33,6 +33,26 @@ namespace FleetM360_PLL.Message
             "The truck has been replaced with another one.",
             "تم استبدال الشاحنة بشاحنة أخرى"
        };
+
+        public static string[] roadEndMaintainance = new string[3]
+      {
+            "",
+            "maintenance_completed",
+            "تم الانتهاء من صيانة الشاحنة"
+      };
+        public static string[] roadStartMaintainance = new string[3]
+       {
+            "",
+            "in_maintenance",
+            "الشاحنة تحت الصيانة"
+       };
+
+        public static string[] roadTruckReplaced = new string[3]
+       {
+            "",
+            "will_be_swapped",
+            "سيتم استبدال الشاحنة"
+       };
         public static string[] failedMaintainance = new string[3]
       {
             "",

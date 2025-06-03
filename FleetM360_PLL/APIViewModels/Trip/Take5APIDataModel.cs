@@ -70,5 +70,6 @@ namespace FleetM360_PLL.APIViewModels.Trip
         public int? hours { get; set; }
         public int? minutes { get; set; }
         public int? seconds { get; set; }
+        public bool? locationStatus { get; set; }
     }
 }

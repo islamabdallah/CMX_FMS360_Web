@@ -5,6 +5,7 @@ using FleetM360_DAL.Repository.EntityFramework;
 using FleetM360_PLL.APIViewModels.Drivers;
 using FleetM360_PLL.APIViewModels.Trip;
 using FleetM360_PLL.Services.Contracts;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using System;
@@ -52,13 +53,27 @@ namespace FleetM360_PLL.Services.Implementation
             {
                 string state = "Success";
                 string MainCategory = "";
+                var trip = _context.Trips.Where(a => a.Id == Convert.ToInt64(model.tripId)).FirstOrDefault();
                 if (model.category == 1)
                 {
                     MainCategory = "الحالة الصحية".Trim(); //model.category.ToString();
                 }
                 else if (model.category == 2)
                 {
-                    MainCategory = "معدات".Trim(); //model.category.ToString();
+                   // var trip = _context.Trips.Where(a => a.Id == Convert.ToInt64(model.tripId)).FirstOrDefault();
+                    if (trip != null)
+                    {
+                        var loadedd = await _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.IsVisible == true && t.Event == "EndGrossWeight").FirstOrDefaultAsync();
+                        if (loadedd != null || trip.SubTypeId !=1)
+                        {
+                            MainCategory = "معدات".Trim(); //model.category.ToString();
+                        }
+                        else
+                        {
+                            MainCategory = "معدات للتحميل".Trim(); //model.category.ToString();
+                        }
+                    }
+                           
                 }
                 else if (model.category == 3)
                 {
@@ -72,7 +87,7 @@ namespace FleetM360_PLL.Services.Implementation
                     }
                 }
                 var answer = _context.PreCheckAnswers.Where(a => a.PreCheckQuestionId == 1 && a.AnswerValue == false).FirstOrDefault();
-                var trip = _context.Trips.Where(a => a.Id == Convert.ToInt64(model.tripId)).FirstOrDefault();
+               
                 // Add second record to TableB
                 var itemB = new TripPrecheck
                 {
@@ -81,7 +96,7 @@ namespace FleetM360_PLL.Services.Implementation
                     TripNumber = trip.TripNumber,
                     TruckNumber = trip.TruckNumber,
                     SiloNumber = trip.SiloNumber,
-                    DriverId = "14811",
+                    DriverId = model.UserNumber.ToString(),
                     Date = DateTime.Now,
                     Lat = model.lat != null ? (double)model.lat : 0,
                     Lng = model.lng != null ? (double)model.lng : 0,

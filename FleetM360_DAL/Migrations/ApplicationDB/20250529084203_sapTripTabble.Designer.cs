@@ -4,6 +4,7 @@ using FleetM360_DAL.Repository.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FleetM360_DAL.Migrations.ApplicationDB
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250529084203_sapTripTabble")]
+    partial class sapTripTabble
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -896,9 +899,6 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime?>("ArrivedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -921,17 +921,8 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("customerNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("departureDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("jobsiteNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("materialNumber")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -1622,50 +1613,6 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
                     b.ToTable("TripTake5s");
                 });
 
-            modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.TripWeight", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDelted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsVisible")
-                        .HasColumnType("bit");
-
-                    b.Property<long>("ParentTrip")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("TripNumber")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("TruckNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double>("Weight")
-                        .HasColumnType("float");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("tripWeights");
-                });
-
             modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.Truck", b =>
                 {
                     b.Property<long>("Id")
@@ -1744,53 +1691,6 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
                     b.HasKey("Id");
 
                     b.ToTable("Trucks");
-                });
-
-            modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.TruckNotification", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDelted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsVisible")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("Seen")
-                        .HasColumnType("bit");
-
-                    b.Property<long?>("TripLogId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("TruckNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("notificationDescription")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("notificationDescriptionAR")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("notificationTitle")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("notificationTitleAR")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TruckNotifications");
                 });
 
             modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.TruckSilo", b =>

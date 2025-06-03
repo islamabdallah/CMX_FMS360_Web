@@ -21,13 +21,14 @@ namespace FleetM360_PLL.APIViewModels.Trip
     {
         public userApiModel driver { get; set; }
         public List<TripApiModel> trips { get; set; }
+        public int userUnSeenNotificationCount { get; set; }
     }
     public class SubTripApiModel
     {
         public string? truckNumber { get; set; }
         public string? truckId { get; set; }
         public string? tripId { get; set; }
-        public string? material { get; set; }
+        public string? material { get; set; }// mission / backuling / cement 
         public double? quantity { get; set; }
         public string? status { get; set; }
         public int? start { get; set; }
@@ -35,6 +36,7 @@ namespace FleetM360_PLL.APIViewModels.Trip
         public string? toAddress { get; set; }
         public string? fromDate { get; set; }
         public string? toDate { get; set; }
+        public int? tripType {  get; set; }
         public List<LocationApiModel> fromLocations { get; set; }
         public List<LocationApiModel> toLocations { get; set; }
     }
@@ -46,9 +48,10 @@ namespace FleetM360_PLL.APIViewModels.Trip
         public string? customerPhoneNumber { get; set; }
         public string? recipientName { get; set; }
         public string? recipientPhoneNumber { get; set; }
-        public string? status { get; set; }
+        public bool? locationStatus { get; set; }
+        public int? locationType {  get; set; }
         public string? address { get; set; }
-        public string? materialType { get; set; }
+        public string? materialType { get; set; } // rdf / mokem / actual product 
         public double? lat { get; set; }
         public double? lng { get; set; }
         public double? qty { get; set; }
