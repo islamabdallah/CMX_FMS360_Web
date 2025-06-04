@@ -1,60 +1,60 @@
 ﻿@model FleetM360_PLL.ViewModels.TripModel
-
+@using static FleetM360_PLL.CommanData;
 
 @* <div class="container mt-3"> *@
-    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Trip /</span> Create Trip</h4>
+<h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Trip /</span> Create Trip</h4>
 
-   
+
 <div class="row">
     <div class="col-lg-12 mb-4 order-0">
         <div class="card">
             <div class="d-flex align-items-end row">
                 <div class="col-sm-7">
                     <div class="card-body">
-                       @*  <form class="row g-3" asp-action="Create"> *@
+                        @*  <form class="row g-3" asp-action="Create"> *@
                         @using (Html.BeginForm("Create", "Trip", FormMethod.Post, new { id = "truckForm" }))
-                            {
-                               
-                            
-                        <h5 class="card-title text-primary">Truck Details</h5>
-                        <p class="mb-4">
-                            You have done <span class="fw-bold">72%</span> more sales today. Check your new badge in
-                            your profile.
-                        </p>
-                        <div class="col-6 col-lg-4 mb-3">
-                            <label for="TruckNumber" class="form-label">Example select</label>
-                           @*  <select onchange="test()" asp-for="TruckId" id="TruckId" class="form-select" aria-label="Default select example" asp-items="@(new SelectList(Model.Trucks, "Id", "TruckNumber"))">
+                        {
+
+
+                            <h5 class="card-title text-primary">Truck Details</h5>
+                            <p class="mb-4">
+                                You have done <span class="fw-bold">72%</span> more sales today. Check your new badge in
+                                your profile.
+                            </p>
+                            <div class="col-6 col-lg-4 mb-3">
+                                <label for="TruckNumber" class="form-label">Example select</label>
+                                @*  <select onchange="test()" asp-for="TruckId" id="TruckId" class="form-select" aria-label="Default select example" asp-items="@(new SelectList(Model.Trucks, "Id", "TruckNumber"))">
                                 <option value="-1" selected disabled>Select Truck</option>
                             </select> *@
                                 @Html.DropDownListFor(
-                                         model => model.TruckId,
-                                         new SelectList(Model.Trucks, "Id", "TruckNumber"),
-                                         "Select Truck",
-                                         new { @class = "form-select", @id = "TruckId", onchange = "this.form.submit();" }
-                                         )
-                        </div>
+                                                                             model => model.TruckId,
+                                                                             new SelectList(Model.Trucks, "Id", "TruckNumber"),
+                                                                             "Select Truck",
+                                                                             new { @class = "form-select", @id = "TruckId", onchange = "this.form.submit();" }
+                                                                             )
+                            </div>
 
-                           
+
                             <div class="col-12">
                                 <button type="submit" class="btn btn-sm btn-outline-primary">Add</button>
                             </div>
-                            }
+                        }
                         @* </form> *@
                     </div>
                 </div>
                 <div class="col-sm-5 text-center text-sm-left">
                     <div class="card-body pb-0 px-0 px-md-4">
                         <img src="~/sneat/assets/img/illustrations/man-with-laptop-light.png"
-                             height="140"
-                             alt="View Badge User"
-                             data-app-dark-img="illustrations/man-with-laptop-dark.png"
-                             data-app-light-img="illustrations/man-with-laptop-light.png" />
+                        height="140"
+                        alt="View Badge User"
+                        data-app-dark-img="illustrations/man-with-laptop-dark.png"
+                        data-app-light-img="illustrations/man-with-laptop-light.png" />
                     </div>
                 </div>
             </div>
         </div>
     </div>
-   
+
     <!-- Total Revenue -->
     <div class="col-12 col-lg-12 order-2 order-md-3 order-lg-2 mb-4">
         <div class="card">
@@ -69,11 +69,11 @@
                             <div class="col-6 col-lg-4 mb-3">
                                 <label class="form-label" for="basic-icon-default-fullname">Trip Type</label>
                                 <select id="inputState" class="form-select">
-                            <option selected>Select Type...</option>
-                            <option value="1">Cement</option>
-                            <option value="2">Backhauling</option>
-                            <option value="3">Mission</option>
-                        </select>
+                                    <option selected>Select Type...</option>
+                                    <option value="1">Cement</option>
+                                    <option value="2">Backhauling</option>
+                                    <option value="3">Mission</option>
+                                </select>
                             </div>
                             <div class="col-6 col-lg-4 mb-3">
                                 <label class="form-label" for="basic-icon-default-fullname">Mission Type</label>
@@ -89,7 +89,7 @@
                                 <select asp-for="TruckId" id="TruckId1" class="form-select" aria-label="Default select example" asp-items="@(new SelectList(Model.Trucks, "Id", "TruckNumber"))">
                                     <option value="-1" selected disabled>Select Truck</option>
                                 </select>
-                               @*  <button type="button" id="clearSelections" class="btn btn-danger">Clear Selections</button> *@
+                                @*  <button type="button" id="clearSelections" class="btn btn-danger">Clear Selections</button> *@
 
                             </div>
                             <div class="col-6 col-lg-4 mb-3">
@@ -103,11 +103,11 @@
                                 <div class="input-group input-group-merge">
                                     <span class="input-group-text"><i class="bx bx-envelope"></i></span>
                                     <input type="text"
-                                           id="basic-icon-default-email"
-                                           class="form-control"
-                                           placeholder="john.doe"
-                                           aria-label="john.doe"
-                                           aria-describedby="basic-icon-default-email2" />
+                                    id="basic-icon-default-email"
+                                    class="form-control"
+                                    placeholder="john.doe"
+                                    aria-label="john.doe"
+                                    aria-describedby="basic-icon-default-email2" />
                                     <span id="basic-icon-default-email2" class="input-group-text">example.com</span>
                                 </div>
                                 <div class="form-text">You can use letters, numbers & periods</div>
@@ -119,11 +119,11 @@
                                         <i class="bx bx-phone"></i>
                                     </span>
                                     <input type="text"
-                                           id="basic-icon-default-phone"
-                                           class="form-control phone-mask"
-                                           placeholder="658 799 8941"
-                                           aria-label="658 799 8941"
-                                           aria-describedby="basic-icon-default-phone2" />
+                                    id="basic-icon-default-phone"
+                                    class="form-control phone-mask"
+                                    placeholder="658 799 8941"
+                                    aria-label="658 799 8941"
+                                    aria-describedby="basic-icon-default-phone2" />
                                 </div>
                             </div>
                             <div class="col-6 col-lg-4 mb-3">
@@ -133,10 +133,10 @@
                                         <i class="bx bx-comment"></i>
                                     </span>
                                     <textarea id="basic-icon-default-message"
-                                              class="form-control"
-                                              placeholder="Hi, Do you have a moment to talk Joe?"
-                                              aria-label="Hi, Do you have a moment to talk Joe?"
-                                              aria-describedby="basic-icon-default-message2"></textarea>
+                                    class="form-control"
+                                    placeholder="Hi, Do you have a moment to talk Joe?"
+                                    aria-label="Hi, Do you have a moment to talk Joe?"
+                                    aria-describedby="basic-icon-default-message2"></textarea>
                                 </div>
                             </div>
                             <div class="col-6 col-lg-4 mb-3">
@@ -148,296 +148,210 @@
                                     <option value="3">Three</option>
                                 </select>
                             </div>
-                           @*  <button type="submit" class="btn btn-primary">Send</button> *@
+                            @*  <button type="submit" class="btn btn-primary">Send</button> *@
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Create Trip</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!--/ Total Revenue -->
+
+</div>
+
+@if(Model.TripGroup!=null)
+{
+    foreach(var item in Model.TripGroup)
+    {
+        <div class="row">
+            <div class="col-lg-12 mb-4 order-0">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Parent Trip # @item.ParentTrip</h5>
+                        <small class="text-muted float-end"># @item.Trips.Count</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="table-responsive-sm">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Trip Number</th>
+                                            <th>type</th>
+                                            <th>Stage</th>
+                                            <th>Departure date</th>
+                                            <th>arrive date</th>
+                                            <th>Sourse</th>
+                                            <th>Destination</th>
+                                            <th></th>
+                                            @*  <th>Example</th>
+                            <th>Example</th>
+                            <th>Example</th> *@
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (item.Trips.Count > 0)
+                                        {
+                                            foreach(var trip in item.Trips)
+                                            {
+                                                <tr>
+                                                    <td>@trip.Id</td>
+                                                    <td>@trip.TripNumber</td>
+                                                    <td>
+                                                        @(
+                                                            trip.SubTypeId == 1 || trip.SubTypeId == 2
+                                                            ? ((GeneralMaterial)trip.SubTypeId).ToString()
+                                                            : "Mission"
+                                                            )
+                                                    </td>
+                                                    <td>@trip.StageEn</td>
+                                                    <td>@trip.departureDate</td>
+                                                    <td>@trip.ArrivedDate</td>
+                                                    <td>Plant</td>
+                                                    <td>Assuit</td>
+                                                    <td><a href="#" class="card-link">View Details</a></td>
+                                                    @* <td>Yes</td>
+                            <td>Yes</td>
+                            <td>Yes</td> *@
+                                                </tr>
+                                            }
+                                        }
+                                       
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <button type="submit" class="btn btn-primary">Create SubTrip</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl" hidden>
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Basic with Icons</h5>
+                        <small class="text-muted float-end">Merged input group</small>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="col-md-4">
+                                <label for="inputEmail4" class="form-label">Select Truck</label>
+                                <select onchange="test()" asp-for="TruckNumber" id="TruckId" class="form-control select2bs4" asp-items="@(new SelectList(Model.Trucks, "TruckNumber", "TruckNumber"))">
+                                    <option value="-1" selected disabled>Select Truck</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="inputPassword4" class="form-label">Truck Silo information</label><br />
+                                <label for="inputPassword4" class="form-label">truck123 --------------------> silo123</label>
+                                <a class="btn btn-primary">assign silo</a>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="inputEmail4" class="form-label">Select Silo</label>
+                                <select id="inputState" class="form-select">
+                                    <option selected>Choose Silo...</option>
+                                    <option value="1">Silo123</option>
+                                    <option value="2">Silo124</option>
+                                    <option value="3">Silo125</option>
+                                    <option value="4">Silo126</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="inputEmail4" class="form-label">Select Driver</label>
+                                <select id="inputState" class="form-select">
+                                    <option selected>Choose Driver...</option>
+                                    <option value="1">Driver123</option>
+                                    <option value="2">Driver124</option>
+                                    <option value="3">Driver125</option>
+                                    <option value="4">Driver126</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="inputEmail4" class="form-label">Select Role</label>
+                                <select id="inputState" class="form-select">
+                                    <option selected>Choose Role...</option>
+                                    <option value="1">Loading</option>
+                                    <option value="2">OnRoad</option>
+                                    <option value="3">CooDriver</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="inputEmail4" class="form-label">Assigned Drivers</label>
+                                <table class="w-100">
+                                    <tr>
+                                        <th>Driver</th>
+                                        <th>Role</th>
+                                    </tr>
+                                    <tbody>
+                                        <tr>
+                                            <td>Driver123</td>
+                                            <td>Loading</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Driver124</td>
+                                            <td>OnRoad</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Driver125</td>
+                                            <td>CooDriver</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-4">
+                                <label for="inputAddress" class="form-label">Trip Type</label>
+
+                            </div>
+                            <div class="col-4">
+                                <label for="inputAddress2" class="form-label">Material</label>
+                                <input type="text" class="form-control" id="inputAddress2" placeholder="Cement, RDF, or others">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="inputCity" class="form-label">QTY</label>
+                                <input type="text" class="form-control" id="inputCity">
+                            </div>
+                            <div class="col-6">
+                                <label for="inputAddress" class="form-label">Source</label>
+                                <select id="inputState" class="form-select">
+                                    <option selected>Select Type...</option>
+                                    <option value="1">Site1</option>
+                                    <option value="2">Site2</option>
+                                    <option value="3">Site3</option>
+                                    <option value="4">Site4</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label for="inputAddress" class="form-label">Destination</label>
+                                <select id="inputState" class="form-select">
+                                    <option selected>Select Type...</option>
+                                    <option value="1">Site1</option>
+                                    <option value="2">Site2</option>
+                                    <option value="3">Site3</option>
+                                    <option value="4">Site4</option>
+                                </select>
+                            </div>
                             <div class="col-12">
                                 <button type="submit" class="btn btn-primary">Add</button>
                             </div>
                         </form>
                     </div>
-                   
                 </div>
-              
             </div>
         </div>
-    </div>
-    <!--/ Total Revenue -->
-   
-</div>
+    }
+}
 
-<div class="row">
-    <div class="col-xl col-lg-12">
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Basic Layout</h5>
-                <small class="text-muted float-end">Default label</small>
-            </div>
-            <div class="card-body">
-                <form>
-                    <div class="col-md-4">
-                        <label for="inputEmail4" class="form-label">Select Truck</label>
-                        <select onchange="test()" asp-for="TruckNumber" id="TruckId" class="form-control select2bs4" asp-items="@(new SelectList(Model.Trucks, "TruckNumber", "TruckNumber"))">
-                            <option value="-1" selected disabled>Select Truck</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="inputPassword4" class="form-label">Truck Silo information</label><br />
-                        <label for="inputPassword4" class="form-label">truck123 --------------------> silo123</label>
-                        <a class="btn btn-primary">assign silo</a>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="inputEmail4" class="form-label">Select Silo</label>
-                        <select id="inputState" class="form-select">
-                            <option selected>Choose Silo...</option>
-                            <option value="1">Silo123</option>
-                            <option value="2">Silo124</option>
-                            <option value="3">Silo125</option>
-                            <option value="4">Silo126</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="inputEmail4" class="form-label">Select Driver</label>
-                        <select id="inputState" class="form-select">
-                            <option selected>Choose Driver...</option>
-                            <option value="1">Driver123</option>
-                            <option value="2">Driver124</option>
-                            <option value="3">Driver125</option>
-                            <option value="4">Driver126</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="inputEmail4" class="form-label">Select Role</label>
-                        <select id="inputState" class="form-select">
-                            <option selected>Choose Role...</option>
-                            <option value="1">Loading</option>
-                            <option value="2">OnRoad</option>
-                            <option value="3">CooDriver</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="inputEmail4" class="form-label">Assigned Drivers</label>
-                        <table class="w-100">
-                            <tr>
-                                <th>Driver</th>
-                                <th>Role</th>
-                            </tr>
-                            <tbody>
-                                <tr>
-                                    <td>Driver123</td>
-                                    <td>Loading</td>
-                                </tr>
-                                <tr>
-                                    <td>Driver124</td>
-                                    <td>OnRoad</td>
-                                </tr>
-                                <tr>
-                                    <td>Driver125</td>
-                                    <td>CooDriver</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="col-4">
-                        <label for="inputAddress" class="form-label">Trip Type</label>
-                        
-                    </div>
-                    <div class="col-4">
-                        <label for="inputAddress2" class="form-label">Material</label>
-                        <input type="text" class="form-control" id="inputAddress2" placeholder="Cement, RDF, or others">
-                    </div>
-                    <div class="col-md-4">
-                        <label for="inputCity" class="form-label">QTY</label>
-                        <input type="text" class="form-control" id="inputCity">
-                    </div>
-                    <div class="col-6">
-                        <label for="inputAddress" class="form-label">Source</label>
-                        <select id="inputState" class="form-select">
-                            <option selected>Select Type...</option>
-                            <option value="1">Site1</option>
-                            <option value="2">Site2</option>
-                            <option value="3">Site3</option>
-                            <option value="4">Site4</option>
-                        </select>
-                    </div>
-                    <div class="col-6">
-                        <label for="inputAddress" class="form-label">Destination</label>
-                        <select id="inputState" class="form-select">
-                            <option selected>Select Type...</option>
-                            <option value="1">Site1</option>
-                            <option value="2">Site2</option>
-                            <option value="3">Site3</option>
-                            <option value="4">Site4</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary">Add</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl">
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Basic with Icons</h5>
-                <small class="text-muted float-end">Merged input group</small>
-            </div>
-            <div class="card-body">
-                <form>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-fullname">Trip Type</label>
-                       <select id="inputState" class="form-select">
-                            <option selected>Select Type...</option>
-                            <option value="1">Cement</option>
-                            <option value="2">Single Backhauling</option>
-                            <option value="3">Multi backhauling</option>
-                            <option value="4">Mission</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-company">Company</label>
-                        <div class="input-group input-group-merge">
-                            <span id="basic-icon-default-company2" class="input-group-text">
-                                <i class="bx bx-buildings"></i>
-                            </span>
-                            <input type="text"
-                                   id="basic-icon-default-company"
-                                   class="form-control"
-                                   placeholder="ACME Inc."
-                                   aria-label="ACME Inc."
-                                   aria-describedby="basic-icon-default-company2" />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-email">Email</label>
-                        <div class="input-group input-group-merge">
-                            <span class="input-group-text"><i class="bx bx-envelope"></i></span>
-                            <input type="text"
-                                   id="basic-icon-default-email"
-                                   class="form-control"
-                                   placeholder="john.doe"
-                                   aria-label="john.doe"
-                                   aria-describedby="basic-icon-default-email2" />
-                            <span id="basic-icon-default-email2" class="input-group-text">example.com</span>
-                        </div>
-                        <div class="form-text">You can use letters, numbers & periods</div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-phone">Phone No</label>
-                        <div class="input-group input-group-merge">
-                            <span id="basic-icon-default-phone2" class="input-group-text">
-                                <i class="bx bx-phone"></i>
-                            </span>
-                            <input type="text"
-                                   id="basic-icon-default-phone"
-                                   class="form-control phone-mask"
-                                   placeholder="658 799 8941"
-                                   aria-label="658 799 8941"
-                                   aria-describedby="basic-icon-default-phone2" />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-message">Message</label>
-                        <div class="input-group input-group-merge">
-                            <span id="basic-icon-default-message2" class="input-group-text">
-                                <i class="bx bx-comment"></i>
-                            </span>
-                            <textarea id="basic-icon-default-message"
-                                      class="form-control"
-                                      placeholder="Hi, Do you have a moment to talk Joe?"
-                                      aria-label="Hi, Do you have a moment to talk Joe?"
-                                      aria-describedby="basic-icon-default-message2"></textarea>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Send</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+
            
    
-    <br />
-    <div class="card">
-        <div class="card-body">
-            <h4 class="card-title">Card title</h4>
-            <div class="table-responsive-sm">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>type</th>
-                            <th>date</th>
-                            <th>arrive date</th>
-                            <th>Status</th>
-                            <th>Sourse</th>
-                            <th>Destination</th>
-                            <th></th>
-                            @*  <th>Example</th>
-                            <th>Example</th>
-                            <th>Example</th> *@
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>Anna</td>
-                            <td>Pitt</td>
-                            <td>35</td>
-                            <td>New York</td>
-                            <td>USA</td>
-                            <td>Female</td>
-                            <td><a href="#" class="card-link">View Details</a></td>
-                            @* <td>Yes</td>
-                            <td>Yes</td>
-                            <td>Yes</td> *@
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <a href="#" class="btn btn-primary">add trip</a>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-body">
-            <h4 class="card-title">Card title</h4>
-            <div class="table-responsive-sm">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>type</th>
-                            <th>date</th>
-                            <th>arrive date</th>
-                            <th>Status</th>
-                            <th>Sourse</th>
-                            <th>Destination</th>
-                            <th></th>
-                            @*  <th>Example</th>
-                            <th>Example</th>
-                            <th>Example</th> *@
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>Anna</td>
-                            <td>Pitt</td>
-                            <td>35</td>
-                            <td>New York</td>
-                            <td>USA</td>
-                            <td>Female</td>
-                            <td><a href="#" class="card-link">View Details</a></td>
-                            @* <td>Yes</td>
-                            <td>Yes</td>
-                            <td>Yes</td> *@
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <a href="#" class="btn btn-primary">add trip</a>
-        </div>
-    </div>
-
 
 
 @section Scripts {
@@ -447,6 +361,7 @@
                 placeholder: 'Select trucks',
                 width: '100%'
             });
+            $('#TruckId option:first').prop('disabled', true);
         });
     </script>
 
@@ -468,12 +383,12 @@
         }
     </script>
     <script>
-            document.getElementById("clearSelections").addEventListener("click", function() {
-            var selectElement = document.getElementById("TruckId1");
-            for (var i = 0; i < selectElement.options.length; i++) {
-                selectElement.options[i].selected = false;
-            }
-        });
+        //     document.getElementById("clearSelections").addEventListener("click", function() {
+        //     var selectElement = document.getElementById("TruckId1");
+        //     for (var i = 0; i < selectElement.options.length; i++) {
+        //         selectElement.options[i].selected = false;
+        //     }
+        // });
 
     </script>
 }

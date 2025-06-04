@@ -43,6 +43,7 @@ namespace FleetM360_PLL.ViewModels
         public List<JobSiteModel> Distination { get; set; }
         public List<JobSiteModel> JobSites { get; set; }
         public List<TripDriverModel> selectedTripDrivrs { get; set; }
+        public List<TripGroupViewModel> TripGroup { get; set; }
 
     }
 }
