@@ -1,6 +1,7 @@
 ﻿using FleetM360_DAL.Data.Repository;
 using FleetM360_DAL.Models;
 using FleetM360_DAL.Models.MasterModels;
+using FleetM360_DAL.Repository.EntityFramework;
 using FleetM360_PLL.APIViewModels.Drivers;
 using FleetM360_PLL.Services.Contracts;
 using FleetM360_PLL.ViewModels;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace FleetM360_Web.Controllers
 {
@@ -21,13 +23,14 @@ namespace FleetM360_Web.Controllers
         private readonly IRepository<Trip, long> _repository;
         private readonly IEmployeeService _employeeService;
         private readonly ITruckSiloService _truckSiloService;
+        private readonly ApplicationDBContext _context;
 
         public TripController(ITruckService truckService,
                               IJobSiteService jobsiteService,
                               IDriverService driverService,
                               ITripService tripService, IRepository<Trip, long> repository,
                               UserManager<ApplicationUser> userManager,
-                              IEmployeeService employeeService, ITruckSiloService truckSiloService)
+                              IEmployeeService employeeService, ITruckSiloService truckSiloService, ApplicationDBContext context)
         {
             _driverService = driverService;
             _truckService = truckService;
@@ -37,11 +40,37 @@ namespace FleetM360_Web.Controllers
             _employeeService = employeeService;
             _truckSiloService = truckSiloService;
             _repository = repository;
+            _context = context;
         }
         public IActionResult Index()
         {
             return View("CreateTrip");
         }
+
+        public async Task<IActionResult> SapTrip()
+        {
+            var trip = await _context.SapTrips.Where(t => t.IsVisible == true).ToListAsync();
+            return View("SapTrip",trip);
+        }
+
+        public async Task<IActionResult> EditSapTrip(long id)
+        {
+
+            var result3 = await _context.SapTrips.Where(t => t.Id == id).FirstOrDefaultAsync();
+            return View(result3);
+        }
+
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> EditSapTrip(Relative model)
+        //{
+        //    model.UpdatedDate = DateTime.Now;
+        //    model.IsActive = true;
+        //    model.IsVisible = true;
+        //    model.IsDelted = false;
+        //    var result3 = _repository.Update(model);
+        //    return RedirectToAction("Index");
+        //}
         public ActionResult Create()
         {
             try
@@ -50,8 +79,8 @@ namespace FleetM360_Web.Controllers
                 model.Trucks = _truckService.GetAllActiveTrucks().Where(t => t.Type == "Truck").ToList();
                 //model.Trucks.Insert(0, new TruckModel { Id = "select Truck" });
                 model.JobSites = _jobsiteService.GetAllActiveJobsites().ToList();
-                // var drivers = _driverService.GetAllActiveDrivers().ToList();
-                // model.Drivers = drivers;
+                 var drivers = _driverService.GetAllDrivers();
+                 model.Drivers = drivers;
                 model.Date = DateTime.Now;
                 return View(model);
             }
@@ -74,8 +103,8 @@ namespace FleetM360_Web.Controllers
                 model.TruckId = truckId;
                 model.TruckNumber = truck != null ? truck.TruckNumber : "";
                 model.JobSites = _jobsiteService.GetAllActiveJobsites().ToList();
-                // var drivers = _driverService.GetAllActiveDrivers().ToList();
-                // model.Drivers = drivers;
+                var drivers = _driverService.GetAllDrivers().ToList();
+                model.Drivers = drivers;
                 model.Date = DateTime.Now;
                 var pendingTrips= await _tripService.GetAllPendingTripofTruckforMobile(truckId.ToString(), 1);
                 var trips = await _repository.Find(e => e.IsVisible == true && e.StatusId != 3 && e.TruckNumber == truck.TruckNumber).ToListAsync();

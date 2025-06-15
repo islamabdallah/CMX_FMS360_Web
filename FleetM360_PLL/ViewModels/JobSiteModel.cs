@@ -20,7 +20,7 @@ namespace FleetM360_PLL.ViewModels
         public DateTime? UpdatedDate { get; set; }
 
         public string Name { get; set; }
-
+        public long? Number { get; set; }
         public double Latitude { get; set; }
 
         public double Longitude { get; set; }

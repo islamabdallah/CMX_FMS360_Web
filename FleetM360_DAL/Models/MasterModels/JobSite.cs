@@ -11,6 +11,7 @@ namespace FleetM360_DAL.Models.MasterModels
     {
 
         public string Name { get; set; }
+        public long? Number { get; set; }
 
         public double Latitude { get; set; }
 

@@ -11,7 +11,7 @@ namespace FleetM360_PLL.APIViewModels.Trip
         public string TripNumber { get; set; }
         public string? TruckNumber { get; set; }
         public double weight { get; set; }
-        public string Type { get; set; }
+        public string WeightType { get; set; }
     }
     public class SapTripVM
     {

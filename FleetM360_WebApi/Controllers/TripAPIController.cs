@@ -169,7 +169,7 @@ namespace FleetM360_WebApi.Controllers
                         {                           
                             var onroaddriver =await _context.TripDrivers.Where(e => e.ParentTrip == trip.ParentTrip && e.Role == "OnRoad" && e.DriverId == loginModel.UserNumber).FirstOrDefaultAsync();
                             var loadedd =await _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.IsVisible == true && t.Event == "EndGrossWeight").FirstOrDefaultAsync();
-                            if (trip.SubTypeId == 1)
+                            if (trip.SubTypeId == 1)// || trip.SubTypeId == 4)
                             {
                                 if (onroaddriver != null && loginModel.category == 1)
                                 {
@@ -1211,7 +1211,7 @@ namespace FleetM360_WebApi.Controllers
                     TruckNumber=model.TruckNumber,
                     CreatedBy="Sap",
                     Weight=model.weight,
-                    Type=model.Type,
+                    Type=model.WeightType,
                     IsDelted=false,
                     IsVisible=true,
                     CreatedDate= DateTime.Now,

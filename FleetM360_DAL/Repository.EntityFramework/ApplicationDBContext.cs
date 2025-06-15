@@ -57,5 +57,6 @@ namespace FleetM360_DAL.Repository.EntityFramework
         public DbSet<SapTrip> SapTrips { get; set; }
         public DbSet<TripWeight> tripWeights { get; set; }
         public DbSet<TruckNotification> TruckNotifications { get; set; }
+        public DbSet<Material> Materials { get; set; }
     }
 }
