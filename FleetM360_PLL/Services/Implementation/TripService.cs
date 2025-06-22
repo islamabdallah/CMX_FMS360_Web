@@ -52,19 +52,49 @@ namespace FleetM360_PLL.Services.Implementation
         {
             try
             {
-                var lasttrip = _repository.Find(e => e.IsVisible == true).Last();
+                //var lasttrip = _repository.Find(e => e.IsVisible == true).Last();
+                var lasttrip=await _context.Trips.Where(t=>t.IsVisible==true).OrderBy(t=>t.ParentTrip).LastOrDefaultAsync();
                 if (lasttrip != null)
                 {
                     model.ParentTrip = lasttrip.ParentTrip + 1;
                 }
-                model.StatusId = 1;
+                else
+                {
+                    model.ParentTrip = 1;
+                }
+                    model.StatusId = 1;
                 model.IsCanceled = false;
                 model.IsConverted = false;
                 model.IsDelted = false;
                 model.IsVisible = true;
                 model.CreatedDate = DateTime.Now;
                 model.UpdatedDate = DateTime.Now;
-                var trip = _mapper.Map<Trip>(model);
+                Trip trip = new Trip()
+                {
+                      ParentTrip =model.ParentTrip,
+        TripNumber=model.TripNumber,
+        TruckNumber =model.TruckNumber,
+         SiloNumber =model.SiloNumber,
+         TypeId =model.TypeId,
+         SubTypeId =model.SubTypeId,
+         Date =model.Date,
+       StatusId =model.StatusId,
+        StageEn=model.StageEn,
+        StageAR =model.StageAR,
+         IsCanceled =model.IsCanceled,
+        IsConverted =model.IsConverted,
+        MustStart =model.MustStart,
+         FromPlant=model.FromPlant,
+        Qty =model.Qty,
+        AssignQty =model.Qty,
+        ArrivedDate=model.ArrivedDate,
+        departureDate =model.departureDate,
+        IsDelted=false,
+        IsVisible=true,
+        CreatedDate = DateTime.Now,
+        UpdatedDate = DateTime.Now,
+    };
+               // var trip = _mapper.Map<Trip>(model);
                 Trip result = _repository.Add(trip);
                 if (result != null)
                 {
@@ -113,18 +143,21 @@ namespace FleetM360_PLL.Services.Implementation
                                 plannedTripLocation.Location = sourse.Name;
                                 plannedTripLocation.Lat = sourse.Latitude;
                                 plannedTripLocation.Long = sourse.Longitude;
-                                plannedTripLocation.Type = "Source";
+                                plannedTripLocation.Type = "Dest";
                                 plannedTripLocation.Qty = sourse.Qty;
                                 plannedTripLocation.Material = sourse.Material;
-                                var addedLocationResult = _plannedTripLocationService.CreateTripLocation(plannedTripLocation).Result;
+                                plannedTripLocation.locationStatus = true;
+                               // var addedLocationResult = _plannedTripLocationService.CreateTripLocation(plannedTripLocation).Result;
+                               _context.PlannedTripLocations.Add(plannedTripLocation);
+                                await _context.SaveChangesAsync();
                             }
                         }
                     }
-                    if (model.selectedTripDrivrs != null)
+                    if (model.onRoadDrivers != null)
                     {
-                        if (model.selectedTripDrivrs.Count > 0)
+                        if (model.onRoadDrivers.Count > 0)
                         {
-                            foreach (var driver in model.selectedTripDrivrs)
+                            foreach (var driver in model.onRoadDrivers)
                             {
                                 TripDriverModel tripDriver = new TripDriverModel();
                                 tripDriver.CreatedDate = DateTime.Now;
@@ -135,8 +168,30 @@ namespace FleetM360_PLL.Services.Implementation
                                 tripDriver.SiloNumber = model.SiloNumber;
                                 tripDriver.ParentTrip = model.ParentTrip;
                                 tripDriver.TripNumber = model.TripNumber;
-                                tripDriver.DriverId = driver.Id;
-                                tripDriver.Role = driver.Role;
+                                tripDriver.DriverId = driver;
+                                tripDriver.Role = "OnRoad";
+
+                                var addedDriverResult = _tripDriverService.CreateTripDriver(tripDriver).Result;
+                            }
+                        }
+                    }
+                    if (model.loadDrivers != null)
+                    {
+                        if (model.loadDrivers.Count > 0)
+                        {
+                            foreach (var driver in model.loadDrivers)
+                            {
+                                TripDriverModel tripDriver = new TripDriverModel();
+                                tripDriver.CreatedDate = DateTime.Now;
+                                tripDriver.UpdatedDate = DateTime.Now;
+                                tripDriver.IsDelted = false;
+                                tripDriver.IsVisible = true;
+                                tripDriver.TruckNumber = model.TruckNumber;
+                                tripDriver.SiloNumber = model.SiloNumber;
+                                tripDriver.ParentTrip = model.ParentTrip;
+                                tripDriver.TripNumber = model.TripNumber;
+                                tripDriver.DriverId = driver;
+                                tripDriver.Role = "Loading";
 
                                 var addedDriverResult = _tripDriverService.CreateTripDriver(tripDriver).Result;
                             }

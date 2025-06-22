@@ -22,13 +22,13 @@ namespace FleetM360_PLL.ViewModels
         public string StageAR { get; set; }
         public bool IsCanceled { get; set; }
         public bool IsConverted { get; set; }
+        public bool? MustStart { get; set; }
         public bool FromPlant { get; set; }
         public double Qty { get; set; }
+        public double? AssignQty { get; set; }
         public long Id { get; set; }
         public bool IsDelted { get; set; }
         public bool IsVisible { get; set; }
-        public List<long>loadDrivers { get; set; }
-        public List<long> onRoadDrivers { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public DateTime ArrivedDate { get; set; }
@@ -37,12 +37,14 @@ namespace FleetM360_PLL.ViewModels
 
         //trip data related to driver & trucks
         // public TruckModel selectedTruck { get; set; }
+        public List<long>? loadDrivers { get; set; }
+        public List<long> onRoadDrivers { get; set; }
         public List<TruckModel> Trucks { get; set; }
         public List<DriverModel> Drivers { get; set; }
         public List<JobSiteModel> Sourse { get; set; }
         public List<JobSiteModel> Distination { get; set; }
         public List<JobSiteModel> JobSites { get; set; }
-        public List<TripDriverModel> selectedTripDrivrs { get; set; }
+        public List<TripDriverModel> selectedTripDrivrs { get; set; }   
         public List<TripGroupViewModel> TripGroup { get; set; }
 
     }

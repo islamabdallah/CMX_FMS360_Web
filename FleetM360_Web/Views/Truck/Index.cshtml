@@ -1,50 +1,99 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Real-Time Truck Tracking</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVZcghBdxyoRcpEIJ69V5uOfn_nK2kKSY"></script>
-    @* <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVZcghBdxyoRcpEIJ69V5uOfn_nK2kKSY"></script> *@
-</head>
-<body>
-    <div class="row p-1">
-        <div class="col-1">User</div>
-        <div class="col-5"><input type="text" id="userInput" /></div>
-    </div>
-    <div class="row p-1">
-        <div class="col-1">Message</div>
-        <div class="col-5"><input type="text" class="w-100" id="messageInput" /></div>
-    </div>
-    <div class="row p-1">
-        <div class="col-6 text-end">
-            <input type="button" id="sendButton" value="Send Message" />
+﻿
+<title>Real-Time Truck Tracking</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+@* <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDdJPQL4LHJJ9HvDvQVIv0ibz2j-lC8zP0"></script> *@
+@* <script src="https://cemex.service-now.com/esc_cemex?id=sc_cat_item&table=sc_cat_item&sys_id=b7d155f68786a510cafe4086cebb3599"></script> *@
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBVZcghBdxyoRcpEIJ69V5uOfn_nK2kKSY"></script>
+
+
+<h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Truck /</span> Map</h4>
+
+
+<div class="row">
+    <div class="col-lg-12 mb-4 order-0">
+        <div class="card">
+            <div class="d-flex align-items-end row">
+                <div class="col-sm-12">
+                    <div class="card-body">
+                        <div id="map" style="width: 100%; height: 500px;"></div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
-    <div class="row p-1">
-        <div class="col-6">
-            <hr />
-        </div>
-    </div>
-    <div class="row p-1">
-        <div class="col-6">
-            <ul id="messagesList"></ul>
-        </div>
-    </div>
-    <h2>Truck Location Tracking</h2>
-    <div id="map" style="width: 100%; height: 500px;"></div>
+
+
+
+</div>
+
+
+@section Scripts {
 
     <script>
-        var map;
-        var markers = {};
+        function getLocation() {
+               $(".TimeInfo").remove();
+               var url = '@Url.Content("~/")' + "Truck/getLocations";
+               $.getJSON(url, function (result) {
+                   if (result != null) {
+                       alert("welcome");
+                            //Create Options or set different Characteristics of Google Map
+                            var mapOptions = {
+                           center: new google.maps.LatLng(result[0].Lat, result[0].Long),
+                               zoom: 9,
+                               mapTypeId: google.maps.MapTypeId.ROADMAP
+                           };
 
-        function initMap() {
-            map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 5,
-                center: { lat: 27.1664390563965, lng: 31.0157241821289 } // Default to New York
-            });
-        }
+                           //Display the Google map in the div control with the defined Options
+                           var map = new google.maps.Map(document.getElementById("map"), mapOptions);
+        for (let i = 0; i < result.length; i++) {
 
-        var connection = new signalR.HubConnectionBuilder()
+                           //Set the Latitude and Longitude of the Map
+                           var myAddress = new google.maps.LatLng(result[i].Lat, result[i].Long);
+                           //Set Marker on the Map
+                           var marker = new google.maps.Marker({
+                           position: myAddress,
+                           animation: google.maps.Animation.BOUNCE,
+                               color: 'green',
+                               //icon: x,
+                               map:map,
+                           });
+
+                           marker.setMap(map);
+
+                           google.maps.event.addListener(marker, 'click', (function (marker) {return function () {
+                           console.log('called');
+                                   console.log(result[i].TruckNumber);
+                                   console.log(result.length);
+                                   var Infocontent =
+                                          ('<p>' + 'TruckNumber: ' + '<code class="language-plaintext highlighter-rouge">' + result[i].TruckNumber + '</code>' + '</p>'
+                                          +'<p>' + 'Date: ' + '<code class="language-plaintext highlighter-rouge">' + result[i].Date + '</code>' + '</p>'
+                                          +'<p>' + 'Status: ' + '<code class="language-plaintext highlighter-rouge">' + result[i].Status + '</code>' + '</p>');// result[i].UserName;
+                           infowindow = new google.maps.InfoWindow();
+                           infowindow.setContent(Infocontent);
+                           infowindow.open(map, marker); //'mouseover'
+                           }
+                           })(marker));
+
+                           marker.setMap(map);
+                       }
+
+                       //$('#modal-report').modal('show');
+                       // $('#Vessel-Detailes').modal('show');
+
+                   }
+                   else {
+                      // document.getElementById("msg2").innerHTML = "No Location";
+
+                   }
+               })
+              // $('#modal-report').modal('show');
+
+           }
+
+    </script>
+    <script>
+          var connection = new signalR.HubConnectionBuilder()
             .withUrl("/truckHub") // Change to your backend URL
             .build();
 
@@ -54,29 +103,24 @@
 
         connection.on("ReceiveTruckLocation", function (truckId, latitude, longitude) {
             console.log(truckId);
-            var position = { lat: latitude, lng: longitude };
+            //var position = { lat: latitude, lng: longitude };
 
-            if (markers[truckId]) {
-                markers[truckId].setPosition(position);
-            } else {
-                markers[truckId] = new google.maps.Marker({
-                    position: position,
-                    map: map,
-                    title: "Truck " + truckId
-                });
-            }
+             getLocation();
+        });
+        </script>
+    <script>
+        $(document).ready(function () {
+            getLocation();
         });
 
-
-
-
-
-        window.onload = initMap;
     </script>
 
-    @* <script src="~/js/signalr/dist/browser/signalr.js"></script> *@
+@* <script src="~/js/signalr/dist/browser/signalr.js"></script> *@
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
     <script src="~/js/chat.js"></script>
-</body>
-</html>
+
+}
+
+
+

@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using FleetM360_PLL;
 using FleetM360_Web.hub;
 using System.Globalization;
+using FleetM360_PLL.Services;
 
 
 
@@ -58,6 +59,9 @@ builder.Services.AddScoped<ITermsConditionsService, TermsConditionsService>();
 builder.Services.AddScoped<IPreCheckService, PreCheckService>();
 builder.Services.AddScoped<ITripLogService, TripLogService>();
 builder.Services.AddScoped<IRiskService, RiskService>();
+
+builder.Services.AddSingleton<InMemoryWebSocketStore>();
+builder.Services.AddSingleton<WebSocketService>();
 
 // Add SignalR service
 

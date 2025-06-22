@@ -1,7 +1,9 @@
-﻿using FleetM360_DAL.Models.MasterModels;
+﻿using FirebaseAdmin.Messaging;
+using FleetM360_DAL.Models.MasterModels;
 using FleetM360_DAL.Repository.EntityFramework;
 using FleetM360_PLL;
 using FleetM360_PLL.APIViewModels.Drivers;
+using FleetM360_PLL.APIViewModels.Socket;
 using FleetM360_PLL.Services.Contracts;
 using FleetM360_PLL.Services.Implementation;
 using FleetM360_PLL.ViewModels;
@@ -9,6 +11,8 @@ using FleetM360_Web.hub;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace FleetM360_Web.Controllers
 {
@@ -18,12 +22,15 @@ namespace FleetM360_Web.Controllers
         private readonly IHubContext<TruckHub> _hubContext;
         private readonly ApplicationDBContext _context;
         private readonly ITripService _tripService;
+        private readonly WebSocketService _wsService;
 
-        public TruckController(ITruckService truckService, IHubContext<TruckHub> hubContext, ApplicationDBContext context)
+        public TruckController(ITruckService truckService, IHubContext<TruckHub> hubContext, ApplicationDBContext context,
+            WebSocketService wsService)
         {
             _truckService = truckService;
             _hubContext = hubContext;
             _context = context;
+            _wsService = wsService;
         }
         public IActionResult Index()
         {
@@ -36,6 +43,145 @@ namespace FleetM360_Web.Controllers
             {
                 return RedirectToAction("ERROR404");
             }
+        }
+        public async Task<string> getLocations()
+        {
+            try
+            {
+                var emp = await _context.Trucks.Where(t => t.IsVisible == true && t.status != "Not Assigned").ToListAsync();
+                List<CurrentLocationModel> locations = new List<CurrentLocationModel>();
+                foreach (var v in emp)
+                {
+                    string str = v.status;
+                    if ((v.status == "Idle"))
+                    {
+                        var trips = await _context.Trips.Where(t => t.IsVisible == true && t.TruckNumber == v.TruckNumber && t.StatusId != 3).ToListAsync();
+                        if (trips != null)
+                        {
+                            if (trips.Count > 0)
+                            {
+                                foreach (var tr in trips)
+                                {
+                                    if(tr.StageEn != "Pending")
+                                    {
+                                        var log=await _context.TripLogs.Where(t=>t.IsVisible == true && t.ParentTrip==tr.ParentTrip && t.TripNumber==tr.TripNumber)
+                                            .OrderBy(t=>t.Id).LastOrDefaultAsync();
+                                        if(log != null)
+                                        {
+                                            str = log.Event;
+                                            break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        str = "Not start Trip";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    CurrentLocationModel locationModel = new CurrentLocationModel();
+                        locationModel.Id = v.Id;
+                        locationModel.TruckNumber = v.TruckNumber;
+                        locationModel.Status = str;
+                        locationModel.Lat = v.Lat.ToString();
+                        locationModel.Long = v.Long.ToString();
+                        locationModel.Address = "";                     
+                        locationModel.Date = v.UpdatedDate.ToString();
+                        locations.Add(locationModel);
+                    
+                }
+
+                // var item = _context.AttendanceDetails.Where(t => t.AttendanceId == Convert.ToInt32("1")).ToList();
+                return JsonSerializer.Serialize(locations.OrderByDescending(t => t.Id).ToList());
+
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+
+        public async Task<IActionResult> Release()
+        {
+            try
+            {
+                var truckModels = await _context.Trucks.Where(t => t.IsVisible == true && t.status.Trim() == "Maintainance".Trim()).ToListAsync(); //_truckService.GetAllTrucks().ToList();
+                return View(truckModels);
+            }
+            catch (Exception e)
+            {
+                return RedirectToAction("ERROR404");
+            }
+        }
+        public async Task<IActionResult> ReleaseTruck(long id)
+        {
+           var model= await _context.Trucks.Where(t=>t.IsVisible==true && t.Id==id).FirstOrDefaultAsync();
+            if (model == null)
+            {
+                return RedirectToAction("ERROR404");
+            }
+            model.status = "Idle";
+            model.UpdatedDate = DateTime.Now;
+            _context.Trucks.Update(model);
+            await _context.SaveChangesAsync();
+            var trips = await _context.Trips.Where(t => t.IsVisible == true && t.StatusId != 3 && t.TruckNumber == model.TruckNumber).ToListAsync();
+            bool onTrip = false;
+            if (trips != null)
+            {
+                if (trips.Count > 0)
+                {
+                    foreach (var trip in trips)
+                    {
+                        var triplog = await _context.TripLogs.Where(t => t.IsVisible == true && t.ParentTrip == trip.ParentTrip && t.TripNumber == trip.TripNumber).OrderBy(t => t.Id).LastOrDefaultAsync();
+                        if (triplog != null)
+                        {
+                            if (triplog.Event == "Maintainance")
+                            {
+                                var Event = _context.LogLookups.Where(t => t.IsVisible == true && t.LogName == "EndMaintainance".Trim()).FirstOrDefault();
+                                if (Event != null)
+                                {
+                                    TripLog tripLog = new TripLog()
+                                    {
+                                        ParentTrip = trip.ParentTrip,
+                                        TripNumber = trip.TripNumber,
+                                        Event = Event.LogName,
+                                        LogId = Event.Id,
+                                        // Lat = model.lat,
+                                        // Long = model.lng,
+                                        CreatedBy = "Admin",// model.UserNumber.ToString(),
+                                        Date = DateTime.Now.ToString(),
+                                        CreatedDate = DateTime.Now,
+                                        UpdatedDate = DateTime.Now,
+                                        IsDelted = false,
+                                        IsVisible = true
+                                    };
+                                    _context.TripLogs.Add(tripLog);
+                                    await _context.SaveChangesAsync();
+                                    //trip.StageAR = StageAR;
+                                    //trip.StageEn = StageEn;
+                                    //trip.UpdatedDate = DateTime.Now;
+                                    //_context.Trips.Update(trip);
+                                    //await _context.SaveChangesAsync();
+                                    SocketMessageApiModel message = new SocketMessageApiModel()
+                                    {
+                                        status = "maintenance_done",
+                                        time = DateTime.Now,
+                                    };
+
+                                    await _wsService.SendMessageToUserAsync(Convert.ToInt32(triplog.CreatedBy), id.ToString(), JsonSerializer.Serialize(message));
+                                    //return
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+
+
+            return RedirectToAction("Index");
         }
         // GET: TruckController/Details/5
         public ActionResult Details(int id)
@@ -250,6 +396,18 @@ namespace FleetM360_Web.Controllers
         public List<TruckModel> trucks { get; set; }
         public List<DriverModel> drivers { get; set; }
         public long? convertedTruckId { get; set; }
+    }
+
+    public class CurrentLocationModel
+    {
+        public long Id { get; set; }      
+        public string TruckNumber { get; set; }
+        public string Lat { get; set; }
+        public string Long { get; set; }
+        public string Address { get; set; }
+        public string Status { get; set; }
+        public string Date { get; set; }
+       // public string Time { get; set; }
     }
 
 }

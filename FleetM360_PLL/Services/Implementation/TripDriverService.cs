@@ -29,7 +29,20 @@ namespace FleetM360_PLL.Services.Implementation
         {
             try
             {
-                var trip = _mapper.Map<TripDriver>(model);
+                // var trip = _mapper.Map<TripDriver>(model);
+                TripDriver trip = new TripDriver()
+                {
+                    ParentTrip = model.ParentTrip,
+                    TripNumber = model.TripNumber,
+                    TruckNumber = model.TruckNumber,
+                    SiloNumber = model.SiloNumber,
+                    DriverId = model.DriverId,
+                    Role = model.Role,
+                    CreatedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    IsDelted = false,
+                    IsVisible = true,
+                };
                 TripDriver result = _repository.Add(trip);
                 if (result != null)
                 {
