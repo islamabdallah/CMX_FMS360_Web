@@ -1,6 +1,7 @@
 ﻿using FleetM360_DAL.Models.Entity;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,5 +28,7 @@ namespace FleetM360_DAL.Models.MasterModels
         public string? recipientName { get; set; }
         public string? recipientPhoneNumber { get; set; }
         public bool? locationStatus { get; set; }
+        public bool? Converted { get; set; }
+        public bool? arrivalFlag { get; set; }
     }
 }

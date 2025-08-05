@@ -1,0 +1,368 @@
+﻿@model IEnumerable<FleetM360_PLL.ViewModels.TruckFailureVModel>
+@using static FleetM360_PLL.CommanData;
+@using static FleetM360_DAL.Models.MasterModels.TruckFailureDetail;
+@using static FleetM360_DAL.Models.MasterModels.TruckFailure;
+
+@* <div class="container mt-3"> *@
+<h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Trip /</span> Pending SapTrip</h4>
+@{
+    var allTrucksJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.TruckSelectList);
+}
+<script>
+    const allTrucks = @Html.Raw(allTrucksJson); // global JS variable
+</script>
+
+
+@if (Model != null)
+{
+
+    <div class="row">
+        <div class="col-lg-12 mb-4 order-0">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Trucks Failures</h5>
+                    <small class="text-muted float-end">Need Process from Admin</small>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="table-responsive-sm">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Truck Number</th>
+                                        <th>Silo Number</th>
+                                        <th>Stage</th>
+                                        <th>Created By</th>
+                                        <th>Date</th>
+                                        <th>Type</th>
+
+                                        <th></th>
+                                        @*  <th>Example</th>
+                            <th>Example</th>
+                            <th>Example</th> *@
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                    @foreach (var trip in Model)
+                                    {
+                                        var lastDetail = trip.trucks.TruckFailures.OrderBy(t => t.Id).LastOrDefault();
+                                        @if (lastDetail != null)
+                                        {
+                                            <tr>
+                                                <td>@trip.trucks.Id</td>
+                                                <td>@trip.trucks.TruckNumber</td>
+                                                <td>@trip.trucks.SiloNumber</td>
+                                                <td>@(lastDetail?.Stage ?? "-")</td>
+                                                <td>@(lastDetail?.CreatedBy ?? "-")</td>
+                                                <td>@(lastDetail?.Date.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                                                <td>@trip.trucks.Category</td>
+
+                                                <td>
+                                                    
+                                                        <a class="card-link text-primary"
+                                                           data-bs-toggle="modal"
+                                                           data-bs-target="#modalCenter"
+                                                           data-truck="@trip.trucks.TruckNumber"
+                                                           data-silo="@trip.trucks.SiloNumber"
+                                                           data-stage="@lastDetail?.Stage"
+                                                           data-date="@lastDetail?.Date.ToString("yyyy-MM-ddTHH:mm")">
+                                                            Release
+                                                        </a>
+
+                                                    <a class="card-link text-primary"
+                                                       data-bs-toggle="modal"
+                                                       data-bs-target="#modalCenterReplace"
+                                                       data-truck="@trip.trucks.TruckNumber"
+                                                       data-silo="@trip.trucks.SiloNumber"
+                                                       data-stage="@lastDetail?.Stage">
+                                                        Replace
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            
+                                        }
+                                       
+                                    }
+
+
+                                </tbody>
+                            </table>
+                        </div>
+
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+}
+
+
+
+
+<div class="modal fade" id="modalCenterReplaceOld" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCenterTitle">Release Truck</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <div class="col mb-0">
+                        <h5 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Truck /</span> <span>1233</span></h5>
+                    </div>
+                    <div class="col mb-0">
+                        <h5 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Silo /</span> Basic Tables</h5>
+                    </div>
+                    <div class="col mb-0">
+                        <h5 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Stage /</span> Basic Tables</h5>
+                    </div>
+                </div>
+                <div class="row g-2">
+                    <div class="col mb-0">
+                        <label for="emailWithTitle" class="form-label">Select Truck</label>
+                        <select asp-items="ViewBag.SiloSelectList" class="form-select" name="TruckNumber" id="TruckNumber">
+                            <option value="">-- Select Silo --</option>
+                        </select>
+                    </div>
+                    <div class="col mb-0">
+                        <label for="dobWithTitle" class="form-label">Select Silo</label>
+                        <select asp-items="ViewBag.SiloSelectList" class="form-select" name="SiloNumber" id="SiloNumber">
+                            <option value="">-- Select Silo --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row g-2">
+                    <div class="col mb-3">
+                        <label for="nameWithTitle" class="form-label">Comment</label>
+                        <textarea class="form-control"></textarea>
+                       
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCenterReplace" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <form asp-action="ReplaceTruck" method="post" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCenterTitle">Release Truck</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <div class="col mb-0">
+                        <h5 class="fw-bold py-3 mb-4">
+                            <span class="text-muted fw-light">Truck /</span>
+                            <span id="replaceModalTruck">-</span>
+                        </h5>
+                    </div>
+                    <div class="col mb-0">
+                        <h5 class="fw-bold py-3 mb-4">
+                            <span class="text-muted fw-light">Silo /</span>
+                            <span id="replaceModalSilo">-</span>
+                        </h5>
+                    </div>
+                    <div class="col mb-0">
+                        <h5 class="fw-bold py-3 mb-4">
+                            <span class="text-muted fw-light">Stage /</span>
+                            <span id="replaceModalStage">-</span>
+                        </h5>
+                    </div>
+                </div>
+
+                <div class="row g-2">
+                    <div class="col mb-0">
+                        <label for="TruckNumber" class="form-label">Select Truck to get failed truck</label>
+                        <select asp-items="ViewBag.TruckSelectList" class="form-select" name="TruckNumber" id="lmTruckNumber" onchange="getSilo()">
+                            <option value="">-- Select Truck --</option>
+                        </select>
+                    </div>
+                    <div class="col mb-0">
+                        <label for="SiloNumber" class="form-label">Silo Number</label>
+                        @* <select asp-items="ViewBag.SiloSelectList" class="form-select" name="SiloNumber" id="SiloNumber">
+                            <option value="">-- Select Silo --</option>
+                        </select> *@
+                        <input type="text" id="lmSiloNumber" name="SiloNumber" class="form-control" readonly/>
+                    </div>
+                </div>
+                <div class="row g-2">
+                    <div class="col mb-0">
+                        <label for="TruckNumber" class="form-label">Select Truck to complete the active trip</label>
+                        <select asp-items="ViewBag.TruckSelectList" class="form-select" name="TruckNumber" id="lmTruckNumber2" onchange="getSilo()">
+                            <option value="">-- Select Truck --</option>
+                        </select>
+                    </div>
+                    <div class="col mb-0">
+                        <label for="SiloNumber" class="form-label">Silo Number</label>
+                        @* <select asp-items="ViewBag.SiloSelectList" class="form-select" name="SiloNumber" id="SiloNumber">
+                            <option value="">-- Select Silo --</option>
+                        </select> *@
+                        <input type="text" id="lmSiloNumber2" name="SiloNumber" class="form-control" readonly />
+                    </div>
+                </div>
+
+                <div class="row g-2">
+                    <div class="col mb-3">
+                        <label for="Comment" class="form-label">Comment</label>
+                        <textarea class="form-control" name="Comment" id="Comment"></textarea>
+                    </div>
+                </div>
+
+                <!-- Optional hidden field if you want to send TruckFailure Id -->
+                <input type="hidden" name="TruckFailureId" id="TruckFailureId" value="" />
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    Save changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div class="modal fade" id="modalCenter" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCenterTitle">Release Truck</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row g-2">
+                    <div class="col mb-0">
+                        <h5><span class="text-muted">Truck / </span><span id="modalTruckNumber">-</span></h5>
+                    </div>
+                    <div class="col mb-0">
+                        <h5><span class="text-muted">Silo / </span><span id="modalSilo">-</span></h5>
+                    </div>
+                    <div class="col mb-0">
+                        <h5><span class="text-muted">Stage / </span><span id="modalStage">-</span></h5>
+                    </div>
+                   
+                </div>
+
+                <div class="row g-2 mt-3">
+                    <div class="col mb-0">
+                        <label class="form-label">StartDate</label>
+                        <input type="datetime-local" id="startDate" name="StartDate" class="form-control" />
+
+                    </div>
+                    <div class="col mb-0">
+                        <label class="form-label">EndDate</label>
+                        <input type="datetime-local" id="endDate" name="EndDate" class="form-control" />
+                    </div>
+                </div>
+                <div class="row g-2">
+                    <div class="col mb-3">
+                        <label class="form-label">Comment</label>
+                        <textarea class="form-control" name="Comment"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+      //  const truckSiloMap = @Html.Raw(ViewBag.TruckSelectList ?? "{}");
+
+        function getSilo() {
+              var silo=document.getElementById("lmTruckNumber").value;
+              //alert(silo);
+                  document.getElementById("lmSiloNumber").value=silo;
+                      var silo2=document.getElementById("lmTruckNumber2").value;
+                //alert(silo);
+                    document.getElementById("lmSiloNumber2").value=silo2;
+        }
+    </script>
+
+    <script>
+        const modalCenter = document.getElementById('modalCenter');
+
+        modalCenter.addEventListener('show.bs.modal', function (event) {
+            const trigger = event.relatedTarget;
+
+            const truck = trigger.getAttribute('data-truck') || '-';
+            const silo = trigger.getAttribute('data-silo') || '-';
+            const stage = trigger.getAttribute('data-stage') || '-';
+            const date = trigger.getAttribute('data-date') || '';
+
+            // Set display text in modal
+            document.getElementById('modalTruckNumber').textContent = truck;
+            document.getElementById('modalStage').textContent = stage;
+            document.getElementById('modalSilo').textContent = silo;
+
+            // Conditionally set StartDate
+            const startDateInput = document.getElementById('startDate');
+            if (stage === 'Start' && date) {
+                startDateInput.value = date;
+            } else {
+                startDateInput.value = '';
+            }
+
+            // Optionally clear EndDate
+            document.getElementById('endDate').value = '';
+        });
+    </script>
+
+    <script>
+        const modalReplace = document.getElementById('modalCenterReplace');
+
+        modalReplace.addEventListener('show.bs.modal', function (event) {
+            const trigger = event.relatedTarget;
+
+            const truck = trigger.getAttribute('data-truck') || '';
+            const silo = trigger.getAttribute('data-silo') || '';
+            const stage = trigger.getAttribute('data-stage') || '';
+            const id = trigger.getAttribute('data-id') || '';
+
+            // Set text in header spans
+            document.getElementById('replaceModalTruck').textContent = truck;
+            document.getElementById('replaceModalSilo').textContent = silo;
+            document.getElementById('replaceModalStage').textContent = stage;
+
+            // Pre-select dropdown values
+            document.getElementById('TruckNumber').value = truck;
+            document.getElementById('SiloNumber').value = silo;
+
+            // Set hidden TruckFailureId
+            document.getElementById('TruckFailureId').value = id;
+        });
+    </script>
+}
+

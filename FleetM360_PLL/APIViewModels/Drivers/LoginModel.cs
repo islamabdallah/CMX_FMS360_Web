@@ -44,11 +44,13 @@ namespace FleetM360_PLL.APIViewModels.Drivers
         public double? lat { get; set; }
         public double? lng { get; set; }
         public int? tripLocationId { get; set; }
+       // public bool? isAutomatic { get; set; }
     }
 
 
     public class StartTripApiModel
     {
+        public bool? isConverted { get; set; }
         public bool medicalStatus { get; set; }
         public string? screen { get; set; }
         public List<PrecheckQuestionApiModel> preCheckQuestions { get; set; }
@@ -57,6 +59,7 @@ namespace FleetM360_PLL.APIViewModels.Drivers
     }
     public class QuestionDataModel
     {
+        public bool? isConverted { get; set; }
         public List<PrecheckQuestionApiModel> preCheckQuestions { get; set; }
     }
     public class PrecheckQuestionApiModel

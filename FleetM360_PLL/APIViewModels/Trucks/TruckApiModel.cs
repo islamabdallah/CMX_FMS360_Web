@@ -8,6 +8,7 @@ namespace FleetM360_PLL.APIViewModels.Trucks
 {
     public class TruckApiModel
     {
+        public bool? isConverted { get; set; }
         public string? truckNumber { get; set; }
         public string?  truckId { get; set; }
         public string? truckStatus { get; set; }
@@ -27,6 +28,7 @@ namespace FleetM360_PLL.APIViewModels.Trucks
 
     public class AssignedTruckApiModel
     {
+        public bool? isConverted { get; set; }
         public long UserNumber { get; set; }
         public int languageId { get; set; }
         public string truckNumber { get; set; }
@@ -37,6 +39,7 @@ namespace FleetM360_PLL.APIViewModels.Trucks
 
     public class TruckStatusApiModel
     {
+        public bool? isConverted { get; set; }
         public string? truckId { get; set; }
         public int languageId { get; set; }
         public double? lat { get; set; }
@@ -46,6 +49,6 @@ namespace FleetM360_PLL.APIViewModels.Trucks
         public string subTrip { get; set; }
         public int locationId { get; set; }
         public int userNumber { get; set; }
-
+        public bool? isAutomatic { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using FleetM360_PLL.APIViewModels.Drivers;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace FleetM360_PLL.APIViewModels.Trip
 {
     public class Take5APIDataModel
     {
+        public bool? isConverted { get; set; }
         public List<QuestionModel>? stepOne { get; set; }//done
         public List<OnSiteRiskModel> onSiteRisks { get; set; }
         public LocationQtyDataModel? locationQtyData { get; set; }
@@ -53,8 +55,22 @@ namespace FleetM360_PLL.APIViewModels.Trip
         public Take5UnLoadingModel unLoading { get; set; }
         public int tripLocationId { get; set; }
     }
-
-    public class AnsweredTake5QuestionsModel
+    public class sendTake5DataByStageApiModel
+    {
+        public int userNumber { get; set; }
+        public int languageId { get; set; }
+        public string truckId { get; set; }
+        public string tripId { get; set; }
+        public AnsweredTake5QuestionsModel? step1 { get; set; }
+        public AnsweredTake5QuestionsModel? step2 { get; set; }
+        public List<OnSiteRiskModel>? onSiteRisks { get; set; }
+        public Take5UnLoadingModel? startOperation { get; set; }
+        public Take5UnLoadingModel? endOperation { get; set; }
+        public int tripLocationId { get; set; }
+        public int stage { get; set; }
+    }
+  
+public class AnsweredTake5QuestionsModel
     {
         public List<int>? falseIds { get; set; }
         public double? lat { get; set; }
@@ -71,5 +87,6 @@ namespace FleetM360_PLL.APIViewModels.Trip
         public int? minutes { get; set; }
         public int? seconds { get; set; }
         public bool? locationStatus { get; set; }
+        public DateTime? dateTime { get; set; }
     }
 }

@@ -14,5 +14,6 @@ namespace FleetM360_DAL.Models.MasterModels
         public string SiloNumber { get; set; }//	
         public string CreatedBy { get; set; }                        //	  [DefaultValue(false)]
         public bool IsActive { get; set; }
+        public string SapKey { get; set; }
     }
 }

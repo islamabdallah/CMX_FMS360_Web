@@ -26,5 +26,6 @@ namespace FleetM360_DAL.Models.MasterModels
         public string? DriverLicenceNumber { get; set; }
         [DefaultValue(false)]
         public bool? ConditionsAccept { get; set; }
+        public string? MobileToken { get; set; }
     }
 }

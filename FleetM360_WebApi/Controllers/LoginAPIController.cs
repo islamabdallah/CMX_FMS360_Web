@@ -114,6 +114,7 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[loginModel.languageId], Data = 0 });
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("adminInfo")]
         public async Task<ActionResult> AdminInfo([Bind(include: "UserNumber")] LoginModel loginModel)
         {
@@ -136,8 +137,7 @@ namespace FleetM360_WebApi.Controllers
         }
 
         //[AllowAnonymous]
-        // [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        //[Authorize]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("GetTermsOfConditions")]
         public async Task<ActionResult> GetTermsOfConditions(int languageId)
         {
@@ -169,7 +169,7 @@ namespace FleetM360_WebApi.Controllers
         }
 
 
-        //[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("AcceptConditions")]
         public async Task<ActionResult> AcceptConditions(string userNumber, int languageId , bool isAdmin)
         {
@@ -238,10 +238,7 @@ namespace FleetM360_WebApi.Controllers
 
         }
 
-
-        //[Authorize]
-        // [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-       // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("test")]
         public async Task<ActionResult> test(string name,string category,string mainCategory)
         {
@@ -260,11 +257,6 @@ namespace FleetM360_WebApi.Controllers
                     new PreCheckAnswer { AnswerNameEN = "No",AnswerNameAR="لا",AnswerValue=false,IsVisible=true,IsDelted=false,CreatedDate=DateTime.Now,UpdatedDate=DateTime.Now }
                 }
             };
-
-            _context.PreCheckQuestions.Add(Question);
-            await _context.SaveChangesAsync();
-
-            //return Ok(author);
             return Ok(new { flag = true, Message = "Done Done ", Data = Question });              
         }
     }

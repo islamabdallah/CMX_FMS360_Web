@@ -14,6 +14,9 @@ using FleetM360_PLL;
 using FleetM360_Web.hub;
 using System.Globalization;
 using FleetM360_PLL.Services;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using System.Net;
 
 
 
@@ -39,6 +42,15 @@ var mapperConfig = new MapperConfiguration(cfg =>
     cfg.AddProfile(new MappingProfile());
 });
 
+// Load Firebase admin SDK
+//var firebasePath = Path.Combine(AppContext.BaseDirectory, "App_Data", "firebase-adminsdk.json");
+//var firebasePath = Path.Combine(AppContext.BaseDirectory,
+//    builder.Configuration["Firebase:ServiceAccountKey"]);
+//FirebaseApp.Create(new AppOptions()
+//{
+//    Credential = GoogleCredential.FromFile(firebasePath) // Replace with actual path
+//});
+
 IMapper mapper = mapperConfig.CreateMapper();
 builder.Services.AddSingleton(mapper);
 // Register IUserRepository and UserRepository
@@ -59,11 +71,14 @@ builder.Services.AddScoped<ITermsConditionsService, TermsConditionsService>();
 builder.Services.AddScoped<IPreCheckService, PreCheckService>();
 builder.Services.AddScoped<ITripLogService, TripLogService>();
 builder.Services.AddScoped<IRiskService, RiskService>();
-
+builder.Services.AddScoped<IFirebaseNotificationService, FirebaseNotificationService>();
 builder.Services.AddSingleton<InMemoryWebSocketStore>();
 builder.Services.AddSingleton<WebSocketService>();
+builder.Services.AddScoped<ShipmentRiskRepository>();
+
 
 // Add SignalR service
+System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
 
 builder.Services.AddSignalR();
 

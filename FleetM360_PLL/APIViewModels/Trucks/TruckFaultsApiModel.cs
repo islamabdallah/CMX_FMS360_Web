@@ -15,8 +15,16 @@ namespace FleetM360_PLL.APIViewModels.Trucks
     }
     public class TruckFaultsDataModel
     {
+        public bool? isConverted { get; set; }
         public DateTime? startTime { get; set; }
         public List<TruckFaultsApiModel> truckFaults { get; set; }
+    }
+
+    public class convertCheckResult
+    {
+        public bool? isConverted { get; set; }
+        public string? screen { get; set; }
+        public string? maintenanceFeedback { get; set; }
     }
     public class loadingCommentApiModel
     {

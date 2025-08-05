@@ -18,6 +18,7 @@ namespace FleetM360_PLL.Services.Contracts
         //bool DeleteDriver(long id);
         EmployeeModel GetAdmin(long id);
         public Task<JwtSecurityToken> GenerateAccessToken(List<Claim> authClaims);
+        public Task<ClaimsPrincipal> GetPrincipalFromExpiredToken(string? token);
 
         public Task<string> GenerateRefreshToken();
     }

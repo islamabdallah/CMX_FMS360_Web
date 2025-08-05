@@ -15,10 +15,11 @@ namespace FleetM360_PLL.Services.Contracts
         Task<int> AddDriverFeedbackAsync(DriverFeedback driverFeedback);
         Task<IEnumerable<RiskBusinessModel>> GetAllAsync();
         Task<IEnumerable<RiskLevel>> GetAllRiskLevelAsync();
-        Task<int> AddAsync(Risk risk);
+        //Task<int> AddAsync(Risk risk);
+        Task<int> AddAsync(List<ApiTemplate> templateRisk);
        // Task<IEnumerable<Countries>> CountryList();
 
-       // Task<IEnumerable<string>> DestinationList(ApiTemplate template);
+        // Task<IEnumerable<string>> DestinationList(ApiTemplate template);
 
         Task<IEnumerable<Risk>> GetAllAsyncByCountry(ApiTemplate template);
 

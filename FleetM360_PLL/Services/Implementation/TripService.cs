@@ -62,7 +62,7 @@ namespace FleetM360_PLL.Services.Implementation
                 {
                     model.ParentTrip = 1;
                 }
-                    model.StatusId = 1;
+                model.StatusId = 1;
                 model.IsCanceled = false;
                 model.IsConverted = false;
                 model.IsDelted = false;
@@ -121,6 +121,8 @@ namespace FleetM360_PLL.Services.Implementation
                                 plannedTripLocation.Type = "Source";
                                 plannedTripLocation.Qty = sourse.Qty;
                                 plannedTripLocation.Material = sourse.Material;
+                                plannedTripLocation.arrivalFlag = false;
+                                plannedTripLocation.locationStatus = trip.FromPlant == true || trip.SubTypeId == 1 ? false : true;
                                 var addedLocationResult = _plannedTripLocationService.CreateTripLocation(plannedTripLocation).Result;
                             }
                         }
@@ -147,6 +149,7 @@ namespace FleetM360_PLL.Services.Implementation
                                 plannedTripLocation.Qty = sourse.Qty;
                                 plannedTripLocation.Material = sourse.Material;
                                 plannedTripLocation.locationStatus = true;
+                                plannedTripLocation.arrivalFlag = false;
                                // var addedLocationResult = _plannedTripLocationService.CreateTripLocation(plannedTripLocation).Result;
                                _context.PlannedTripLocations.Add(plannedTripLocation);
                                 await _context.SaveChangesAsync();
@@ -279,6 +282,7 @@ namespace FleetM360_PLL.Services.Implementation
                 var trips = await _repository.Find(e => e.IsVisible == true && e.StatusId != 3 && e.TruckNumber==truck.TruckNumber).ToListAsync();
                 if (trips != null && trips.Count>0)
                 {
+
                     var result = trips.OrderBy(e => e.departureDate).GroupBy(e => e.ParentTrip)
                            .Select(g => new TripGroupViewModel
                            {
@@ -303,7 +307,8 @@ namespace FleetM360_PLL.Services.Implementation
                     }
                     tripApiModel.subTrips = new List<SubTripApiModel>();
                     bool hasCementTrip = false;
-                    bool hasStart=false;    
+                    bool hasStart=false;
+                    bool allDone = true;
                     if (result[0].Trips.Count() > 0) 
                     {
 
@@ -324,12 +329,14 @@ namespace FleetM360_PLL.Services.Implementation
                             {
                                 subTrip.start = 1;
                                 hasStart = true;
+                                allDone = false;
 
                             }
                             else if (trip.StatusId != 3 && trip.StageEn != "Completed" && hasStart == false && hasCementTrip == false) 
                             {
                                 subTrip.start = 1;
                                 hasStart = true;
+                                allDone = false;
 
                             }
                             else if (trip.StageEn == "Completed")
@@ -351,7 +358,7 @@ namespace FleetM360_PLL.Services.Implementation
                             subTrip.tripType = (int)trip.SubTypeId;
 
                             subTrip.fromLocations = new List<LocationApiModel>();
-                            var frmLocations = await _context.PlannedTripLocations.Where(a => a.ParentTrip == trip.ParentTrip && a.TripNumber == trip.TripNumber && a.Type == "Source").ToListAsync();
+                            var frmLocations = await _context.PlannedTripLocations.Where(a =>a.IsVisible==true && a.ParentTrip == trip.ParentTrip && a.TripNumber == trip.TripNumber && a.Type == "Source").ToListAsync();
                             if (frmLocations.Count > 0)
                             {
                                 var distinctCities = frmLocations
@@ -367,7 +374,7 @@ namespace FleetM360_PLL.Services.Implementation
                                 // subTrip.toAddress = "";
                             }
                             subTrip.toLocations = new List<LocationApiModel>();
-                            var tLocations = await _context.PlannedTripLocations.Where(a => a.ParentTrip == trip.ParentTrip && a.TripNumber == trip.TripNumber && a.Type == "Dest").ToListAsync();
+                            var tLocations = await _context.PlannedTripLocations.Where(a =>a.IsVisible==true && a.ParentTrip == trip.ParentTrip && a.TripNumber == trip.TripNumber && a.Type == "Dest").ToListAsync();
                             if (tLocations.Count > 0)
                             {
                                 var Cities = tLocations
@@ -385,7 +392,9 @@ namespace FleetM360_PLL.Services.Implementation
                         }
                     }
                     tripApiModels.Add(tripApiModel);
+                   
                 }
+
                 return tripApiModels;
             }
             return new List<TripApiModel>();
@@ -409,7 +418,14 @@ namespace FleetM360_PLL.Services.Implementation
                         screen = "SplashWidget",//==map
                         preCheckQuestions = new List<PrecheckQuestionApiModel>()
                     };
-
+                    if (trip.IsConverted == true && trip.ConvertedSeen == false)
+                    {
+                        startTripApiModel.isConverted = true;
+                    }
+                    else
+                    {
+                        startTripApiModel.isConverted = false;
+                    }
                     var test =await _context.TripPrechecks.Where(t => t.ParentTrip == trip.ParentTrip && t.DriverId == model.UserNumber.ToString() && t.Category.Trim() == "الحالة الصحية".Trim() && t.Status== "Success").FirstOrDefaultAsync();
                     var loadedd =await _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.IsVisible == true && t.Event == "EndGrossWeight").FirstOrDefaultAsync() ;
                     var leave = await _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.IsVisible == true && t.Event == "LeavPlant").FirstOrDefaultAsync();
@@ -445,8 +461,9 @@ namespace FleetM360_PLL.Services.Implementation
                     {
                         startTripApiModel.medicalStatus = true;    
                     }
+
                     var toolcheckload = await _context.TripPrechecks.Where(t => t.ParentTrip == trip.ParentTrip && t.Category.Trim() == "معدات للتحميل".Trim()).FirstOrDefaultAsync();
-                    if (toolcheckload == null && loadedd == null && trip.SubTypeId==1)
+                    if (toolcheckload == null && loadedd == null && trip.SubTypeId == 1 && roadModel ==null)
                     {
                         startTripApiModel.screen = "PreCheckToolsScreen";
                         return startTripApiModel;
@@ -673,27 +690,27 @@ namespace FleetM360_PLL.Services.Implementation
                         _context.Trips.Update(trip);
                         await _context.SaveChangesAsync();
                     }
-                        var Eventt = _context.LogLookups.Where(t => t.IsVisible == true && t.LogName == "ArriveSite").FirstOrDefault();
-                    if (Eventt != null)
-                    {
-                        TripLog tripLog = new TripLog()
-                        {
-                            ParentTrip = trip.ParentTrip,
-                            TripNumber = trip.TripNumber,
-                            Event = Eventt.LogName,
-                            LogId = Eventt.Id,
-                            Lat = loginModel.lat,
-                            Long = loginModel.lng,
-                            CreatedBy = loginModel.UserNumber.ToString(),
-                            Date = DateTime.Now.ToString(),
-                            CreatedDate = DateTime.Now,
-                            UpdatedDate = DateTime.Now,
-                            IsDelted = false,
-                            IsVisible = true
-                        };
-                        _context.TripLogs.Add(tripLog);
-                        await _context.SaveChangesAsync();
-                    }
+                    //    var Eventt = _context.LogLookups.Where(t => t.IsVisible == true && t.LogName == "ArriveSite").FirstOrDefault();
+                    //if (Eventt != null)
+                    //{
+                    //    TripLog tripLog = new TripLog()
+                    //    {
+                    //        ParentTrip = trip.ParentTrip,
+                    //        TripNumber = trip.TripNumber,
+                    //        Event = Eventt.LogName,
+                    //        LogId = Eventt.Id,
+                    //        Lat = loginModel.lat,
+                    //        Long = loginModel.lng,
+                    //        CreatedBy = loginModel.UserNumber.ToString(),
+                    //        Date = DateTime.Now.ToString(),
+                    //        CreatedDate = DateTime.Now,
+                    //        UpdatedDate = DateTime.Now,
+                    //        IsDelted = false,
+                    //        IsVisible = true
+                    //    };
+                    //    _context.TripLogs.Add(tripLog);
+                    //    await _context.SaveChangesAsync();
+                    //}
                         return take5APIData;
                 }
                 else
@@ -712,11 +729,12 @@ namespace FleetM360_PLL.Services.Implementation
             try
             {
                 List<PrecheckQuestionApiModel>preCheckQuestions = new List<PrecheckQuestionApiModel>();
-                var trip = _context.Trips.Where(a => a.Id == Convert.ToInt64(model.tripId)).FirstOrDefault();
+                var trip =await _context.Trips.Where(a => a.Id == Convert.ToInt64(model.tripId)).FirstOrDefaultAsync();
                 if (trip != null)
                 {
+                    var roadDriver = await _context.TripDrivers.Where(t => t.ParentTrip == trip.ParentTrip && t.TripNumber == trip.TripNumber && t.DriverId == model.UserNumber && t.Role== "OnRoad").FirstOrDefaultAsync();
                     var loadedd = await _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.IsVisible == true && t.Event == "EndGrossWeight").FirstOrDefaultAsync();
-                    if (loadedd != null || trip.SubTypeId !=1)
+                    if (loadedd != null || trip.SubTypeId !=1 || roadDriver !=null)
                     {
                         preCheckQuestions = await _context.PreCheckQuestions
                        .Where(a => a.MainCategory.Trim() == "معدات".Trim())
@@ -795,11 +813,18 @@ namespace FleetM360_PLL.Services.Implementation
                 subTrip.truckId = truck != null ? truck.Id.ToString() : "";
                 subTrip.fromDate = trip.departureDate.ToString("dd-MM-yyyy");
                 subTrip.toDate = trip.ArrivedDate.ToString("dd-MM-yyyy");
-
-                subTrip.fromLocations = new List<LocationApiModel>();
+                if(trip.IsConverted==true && trip.ConvertedSeen == false)
+                {
+                    subTrip.isConverted = true;
+                }
+                else
+                {
+                    subTrip.isConverted = false;
+                }
+                    subTrip.fromLocations = new List<LocationApiModel>();
                 if (trip.SubTypeId != 1 && trip.FromPlant==false)
                 {
-                    subTrip.fromLocations = await _context.PlannedTripLocations.Where(a => a.ParentTrip == trip.ParentTrip && a.TripNumber == trip.TripNumber && a.Type == "Source") // Include AuthorId = 4 if needed
+                    subTrip.fromLocations = await _context.PlannedTripLocations.Where(a =>a.Converted !=true && a.ParentTrip == trip.ParentTrip && a.TripNumber == trip.TripNumber && a.Type == "Source") // Include AuthorId = 4 if needed
                     .Select(a => new LocationApiModel
                     {
                         tripLocationId = (int)a.Id,
@@ -814,7 +839,8 @@ namespace FleetM360_PLL.Services.Implementation
                         lng = a.Long,
                         qty = a.Qty,
                         remainqty = a.Qty,
-                        locationType = 1
+                        locationType = 1,
+                        arrivalFlag = a.arrivalFlag
                     })
                     .ToListAsync();
                     if (subTrip.fromLocations.Count > 0)
@@ -832,7 +858,7 @@ namespace FleetM360_PLL.Services.Implementation
                     }
                 }
                 subTrip.toLocations = new List<LocationApiModel>();
-                subTrip.toLocations = await _context.PlannedTripLocations.Where(a => a.ParentTrip == trip.ParentTrip && a.TripNumber == trip.TripNumber && a.Type == "Dest") // Include AuthorId = 4 if needed
+                subTrip.toLocations = await _context.PlannedTripLocations.Where(a =>a.Converted!=true && a.ParentTrip == trip.ParentTrip && a.TripNumber == trip.TripNumber && a.Type == "Dest") // Include AuthorId = 4 if needed
                 .Select(a => new LocationApiModel
                 {
                     tripLocationId = (int)a.Id,
@@ -847,8 +873,8 @@ namespace FleetM360_PLL.Services.Implementation
                     lng = a.Long,
                     qty = a.Qty,
                     remainqty = a.Qty,
-                    locationType = 2
-
+                    locationType = 2,
+                    arrivalFlag=a.arrivalFlag
                 })
                 .ToListAsync();
                 if (subTrip.toLocations.Count > 0)

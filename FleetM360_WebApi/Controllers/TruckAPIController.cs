@@ -48,6 +48,7 @@ namespace FleetM360_WebApi.Controllers
             _employeeService = employeeService;
             _context = context;
         }
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("pendingTrucks")]
         public async Task<ActionResult> pendingTrucks()
         {
@@ -63,6 +64,7 @@ namespace FleetM360_WebApi.Controllers
             // return BadRequest(new { Data = 0, Message = "رقم المستخدم أو كلمة السر خطأ" });
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("truckCollection")]
         public async Task<ActionResult> TruckCollection([Bind(include: "UserNumber")] LoginModel loginModel)
         {
@@ -111,6 +113,7 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("assignTruck")]
         public async Task<ActionResult> assignTruck(AssignedTruckApiModel truckModel)
         {
@@ -168,6 +171,7 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[truckModel.languageId], Data = 0 });
         }
 
+        //[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("truckStatus")]
         public async Task<ActionResult> truckstatus(TruckStatusApiModel truckModel)
         {
@@ -179,16 +183,27 @@ namespace FleetM360_WebApi.Controllers
                 truck.Lat = truckModel.lat;
                 truck.Long = truckModel.lng;
                 truck.UpdatedDate =DateTime.Now;
+                
                 var updateResult = _truckService.UpdateTruck(truck).Result;
                 if (updateResult)
+                {
+                    var trip = await _context.Trips.Where(t=>t.IsVisible==true && t.TruckNumber==truck.TruckNumber && t.StatusId !=3).FirstOrDefaultAsync();
+                    truckModel.isConverted = false;
+                    if(trip != null)
+                    {
+                        if(trip.IsConverted==true && trip.ConvertedSeen == false)
+                        {
+                            truckModel.isConverted = true;
+                        }
+                    }
                     return Ok(new { flag = true, Message = "Truck Status Updated Successfully", Data = truckModel });
-
+                }
                 return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[truckModel.languageId], Data = 0 });
             }
             return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[truckModel.languageId], Data = 0 });
         }
 
-        
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("ShowTenNotifications")]
         public async Task<ActionResult> ShowTenNotifications(NotificationUserModel model)
         {

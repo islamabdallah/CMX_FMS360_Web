@@ -54,6 +54,7 @@ namespace FleetM360_PLL.Services.Implementation
                 string state = "Success";
                 string MainCategory = "";
                 var trip = _context.Trips.Where(a => a.Id == Convert.ToInt64(model.tripId)).FirstOrDefault();
+                var roadModel = await _tripDriverRepository.Find(e => e.ParentTrip == trip.ParentTrip && e.Role == "OnRoad" && e.DriverId == model.UserNumber).FirstOrDefaultAsync();
                 if (model.category == 1)
                 {
                     MainCategory = "الحالة الصحية".Trim(); //model.category.ToString();
@@ -64,7 +65,7 @@ namespace FleetM360_PLL.Services.Implementation
                     if (trip != null)
                     {
                         var loadedd = await _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.IsVisible == true && t.Event == "EndGrossWeight").FirstOrDefaultAsync();
-                        if (loadedd != null || trip.SubTypeId !=1)
+                        if (loadedd != null || trip.SubTypeId !=1 || roadModel !=null)
                         {
                             MainCategory = "معدات".Trim(); //model.category.ToString();
                         }
@@ -137,7 +138,7 @@ namespace FleetM360_PLL.Services.Implementation
                 trip.UpdatedDate = DateTime.Now;
                 _context.Trips.Update(trip);
                 await _context.SaveChangesAsync();
-                if (model.questionIds != null)
+                if (model.questionIds != null && model.category == 3)
                 {
                     if(model.questionIds.Count > 0)
                     {

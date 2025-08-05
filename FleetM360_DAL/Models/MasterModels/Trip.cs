@@ -28,6 +28,7 @@ namespace FleetM360_DAL.Models.MasterModels
         public DateTime ArrivedDate { get; set; }
 
         public DateTime departureDate { get; set; }
+        public bool? ConvertedSeen { get; set; }
 
 
     }

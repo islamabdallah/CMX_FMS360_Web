@@ -17,7 +17,14 @@ using FleetM360_PLL.APIViewModels.Hazard;
 using FleetM360_DAL.Migrations.ApplicationDB;
 using FleetM360_PLL.ViewModels.Auth;
 using FleetM360_DAL.Models.Entity;
-
+using Microsoft.AspNetCore.Authorization;
+using FirebaseAdmin.Messaging;
+using FleetM360_PLL.APIViewModels.Socket;
+using System.Text.Json;
+using FleetM360_PLL;
+using System.Numerics;
+using static System.Net.Mime.MediaTypeNames;
+using System.Collections.Generic;
 namespace FleetM360_WebApi.Controllers
 {
     [Route("api/[controller]")]
@@ -36,13 +43,15 @@ namespace FleetM360_WebApi.Controllers
         private readonly ApplicationDBContext _context;
         private readonly IPreCheckService _preCheckService;
         private readonly ITripLogService _tripLogService;
+        private readonly WebSocketService _wsService;
 
         public TripAPIController(IDriverService driverService, IEmployeeService employeeService,
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
             ITripService tripService,
             ILogger<TripAPIController> logger,
-            ITruckService truckService, IConfiguration configuration, ITermsConditionsService termsConditionsService, ApplicationDBContext context, IPreCheckService preCheckService, ITripLogService tripLogService)
+            ITruckService truckService, IConfiguration configuration, ITermsConditionsService termsConditionsService, ApplicationDBContext context, IPreCheckService preCheckService, ITripLogService tripLogService,
+            WebSocketService wsService)
         {
             _driverService = driverService;
             _employeeService = employeeService;
@@ -56,8 +65,11 @@ namespace FleetM360_WebApi.Controllers
             _context = context;
             _preCheckService = preCheckService;
             _tripLogService = tripLogService;
+            _wsService = wsService;
         }
-        [HttpPost("startTrip")]
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("startTrip")]//convert Done
         public async Task<ActionResult> startTrip([Bind(include: "DriverNumber")] UserApiModel loginModel)
         {
             DriverModel driver = _driverService.GetDriver(loginModel.UserNumber);
@@ -71,7 +83,7 @@ namespace FleetM360_WebApi.Controllers
                     {
                         StartTripApiModel startTripApiModel = new StartTripApiModel();
                         var groupedTrips =await _tripService.GetHealthPrecheck(loginModel);
-
+                        
                         return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = groupedTrips });
 
                     }
@@ -85,7 +97,8 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
         }
 
-        [HttpPost("toolsPreCheck")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("toolsPreCheck")] //convert Done
         public async Task<ActionResult> toolsPreCheck([Bind(include: "DriverNumber")] UserApiModel loginModel)
         {
             DriverModel driver = _driverService.GetDriver(loginModel.UserNumber);
@@ -101,9 +114,17 @@ namespace FleetM360_WebApi.Controllers
 
                         //var groupedTrips = await _tripService.GetAllPendingTripofParentTrip();//.GetAllpendingTripGroupedByParentTrip();
                         groupedTrips.preCheckQuestions = await _tripService.GetToolsPrecheck(loginModel);
-
-                        // return Ok(new { Data = groupedTrips, Message = "Successful Process" });
-                        return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = groupedTrips });
+                        if(trip.IsConverted==true && trip.ConvertedSeen == false)
+                        {
+                            groupedTrips.isConverted = true;
+                        }
+                        else
+                        {
+                            groupedTrips.isConverted=false;
+                        }
+                            // return Ok(new { Data = groupedTrips, Message = "Successful Process" });
+                            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = groupedTrips });
+                        //return Ok(new { flag = true, isConverted=true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = groupedTrips });
 
                     }
                 }
@@ -117,7 +138,8 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
         }
 
-        [HttpPost("getPreCheck")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("getPreCheck")] //convert Done
         public async Task<ActionResult> getPreCheck([Bind(include: "DriverNumber")] UserApiModel loginModel)
         {
             DriverModel driver = _driverService.GetDriver(loginModel.UserNumber);
@@ -133,7 +155,14 @@ namespace FleetM360_WebApi.Controllers
 
                         //var groupedTrips = await _tripService.GetAllPendingTripofParentTrip();//.GetAllpendingTripGroupedByParentTrip();
                         groupedTrips.preCheckQuestions = await _tripService.GetPrecheckListForCheck(loginModel);
-
+                        if (trip.IsConverted == true && trip.ConvertedSeen == false)
+                        {
+                            groupedTrips.isConverted = true;
+                        }
+                        else
+                        {
+                            groupedTrips.isConverted = false;
+                        }
                         // return Ok(new { Data = groupedTrips, Message = "Successful Process" });
                         return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = groupedTrips });
                     }
@@ -148,7 +177,8 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
         }
 
-        [HttpPost("postPreCheckAnswers")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("postPreCheckAnswers")] //convert Done
         public async Task<ActionResult> postPreCheckAnswers([Bind(include: "DriverNumber")] TripPreCheckApiModel loginModel)
         {
             DriverModel driver = _driverService.GetDriver(loginModel.UserNumber);
@@ -164,6 +194,14 @@ namespace FleetM360_WebApi.Controllers
                         //var groupedTrips = await _tripService.GetAllPendingTripofParentTrip();//.GetAllpendingTripGroupedByParentTrip();
                         var Result = await _preCheckService.AddTripPrecheck(loginModel);
                         startTripApiModel.route = "";
+                        if (trip.IsConverted == true && trip.ConvertedSeen == false)
+                        {
+                            startTripApiModel.isConverted = true;
+                        }
+                        else
+                        {
+                            startTripApiModel.isConverted = false;
+                        }
 
                         if (Result)
                         {                           
@@ -243,7 +281,8 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
         }
 
-        [HttpPost("truckFaults")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("truckFaults")] //convert done
         public async Task<ActionResult> truckFaults([Bind(include: "DriverNumber")] UserApiModel loginModel)
         {
             DriverModel driver = _driverService.GetDriver(loginModel.UserNumber);
@@ -256,6 +295,17 @@ namespace FleetM360_WebApi.Controllers
                     if (aspNetUser != null)
                     {                       
                         var groupedTrips = await _tripService.GettruckFaults(loginModel);
+                        if(groupedTrips != null)
+                        {
+                            if (trip.IsConverted == true && trip.ConvertedSeen == false)
+                            {
+                                groupedTrips.isConverted = true;
+                            }
+                            else
+                            {
+                                groupedTrips.isConverted = false;
+                            }
+                        }
                         return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = groupedTrips });
                     }
                 }
@@ -269,26 +319,43 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
         }
 
-        [HttpPost("getStopOptions")]
-        public async Task<ActionResult> getStopOptions(int languageId)
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("getStopOptions")]////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////Not yet
+        public async Task<ActionResult> getStopOptions(UserApiModel loginModel)//(int languageId)
         {
+            var trip =await _context.Trips.Where(a => a.Id == Convert.ToInt64(loginModel.tripId)).FirstOrDefaultAsync();
+            if (trip==null)
+            {
+                return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[loginModel.languageId], Data = 0 });
+            }
+            StopOptionModel stopOptionModel = new StopOptionModel();
             var StopOptions = await _context.StopOptions.Where(a => a.IsVisible == true) // Include AuthorId = 4 if needed
             .Select(a => new StopOptionApiModel
             {
                 id = a.id.ToString(),
-                label = languageId == 1 ? a.Label_EN : a.Label_AR,
+                label = loginModel.languageId == 1 ? a.Label_EN : a.Label_AR,
                 iconBath = a.iconBath,
                 color = a.color
 
             })
             .ToListAsync();
-
-            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[languageId], Data = StopOptions });
+            stopOptionModel.StopOptions = StopOptions;
+            if (trip.IsConverted == true && trip.ConvertedSeen == false)
+            {
+                stopOptionModel.isConverted = true;
+            }
+            else
+            {
+                stopOptionModel.isConverted = false;
+            }
+            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = stopOptionModel });
 
 
             //return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
         }
-        [HttpPost("sendStopData")]
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("sendStopData")]////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////Not yet
         public async Task<ActionResult> sendStopData(StopDataApiModel model)
         {
             
@@ -338,9 +405,11 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[model.languageId], Data = 0 });
         }
 
-        [HttpPost("getFuelData")]
-        public async Task<ActionResult> getFuelData(int languageId)
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("getFuelData")]  //Convert done                           //have update from mobile side
+        public async Task<ActionResult> getFuelData(UserApiModel loginModel)//(int languageId)
         {
+            var trip = _context.Trips.Where(a => a.Id == Convert.ToInt64(loginModel.tripId)).FirstOrDefault();
             FuelDataModel model = new FuelDataModel();
              model.gasStations = await _context.GasStations.Where(a => a.IsVisible == true) // Include AuthorId = 4 if needed
             .Select(a => new GasStationModel
@@ -361,14 +430,23 @@ namespace FleetM360_WebApi.Controllers
 
            })
            .ToListAsync();
+            model.isConverted = false;
+            if(trip != null)
+            {
+                if(trip.IsConverted==true && trip.ConvertedSeen==false)
+                {
+                    model.isConverted = true;
+                }
+            }
 
-            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[languageId], Data = model });
+            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = model });
 
 
             //return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
         }
 
-        [HttpPost("sendLoadingDriverComment")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("sendLoadingDriverComment")] // convert done
         public async Task<ActionResult> sendLoadingDriverComment([Bind(include: "DriverNumber")] loadingCommentApiModel loginModel)
         {
             DriverModel driver = _driverService.GetDriver(loginModel.userNumber);
@@ -380,8 +458,8 @@ namespace FleetM360_WebApi.Controllers
                     ApplicationUser aspNetUser = await _userManager.FindByIdAsync(driver.UserId);
                     if (aspNetUser != null)
                     {
-                        var tripLogg=await _context.TripLogs.Where(t=>t.ParentTrip==trip.ParentTrip && t.TripNumber==trip.TripNumber && t.Event== "GrossWeight" && t.IsVisible==true).FirstOrDefaultAsync();
-                        if (tripLogg != null) 
+                        var tripLogg = await _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.TripNumber == trip.TripNumber && t.Event == "GrossWeight" && t.IsVisible == true).FirstOrDefaultAsync();
+                        if (tripLogg != null)
                         {
                             var tripLog = _context.LogLookups.Where(t => t.IsVisible == true && t.LogName == "EndGrossWeight").FirstOrDefault();
                             if (tripLog != null)
@@ -407,7 +485,7 @@ namespace FleetM360_WebApi.Controllers
                             }
                             //check if driver authorized to complete the trip go to toolsCheckScreen
                             string screen = "";
-                            
+
                             var roadModel = _context.TripDrivers.Where(e => e.ParentTrip == trip.ParentTrip && e.Role == "OnRoad" && e.DriverId == loginModel.userNumber).FirstOrDefaultAsync().Result;
 
                             if (roadModel == null)
@@ -416,25 +494,42 @@ namespace FleetM360_WebApi.Controllers
                             }
                             else
                             {
-                                screen = "PreCheckToolsScreen";
+                                screen = "PreCheckScreen";
                             }
-                            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = screen });
+                            convertCheckResult result = new convertCheckResult();
+                            result.screen = screen;
+                            if (trip.IsConverted == true && trip.ConvertedSeen == false)
+                            {
+                                result.isConverted = true;
+                            }
+                            else
+                            {
+                                result.isConverted = false;
+                            }
+                            // return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = screen });
+                            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = result });
                         }
                         else
                         {
-                            return BadRequest(new { flag = false, Message = UserMessage.growth_Weight[loginModel.languageId], Data = 0 });
+                            return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[loginModel.languageId], Data = 0 });
                         }
                     }
-                }
-                else
-                {
-                    return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
+                    else
+                    {
+                        return BadRequest(new { flag = false, Message = UserMessage.growth_Weight[loginModel.languageId], Data = 0 });
+                    }
                 }
             }
+            else
+            {
+                return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
+            }
+            
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
         }
-        
-        [HttpPost("getTruckMaintenanceResult")]
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("getTruckMaintenanceResult")]//convert done
         public async Task<ActionResult> getTruckMaintenanceResult([Bind(include: "DriverNumber")] loadingCommentApiModel loginModel)
         {
             DriverModel driver = _driverService.GetDriver(loginModel.userNumber);
@@ -452,40 +547,49 @@ namespace FleetM360_WebApi.Controllers
                         // var groupedTrips = await _tripService.GettruckFaults(loginModel);
                         if (tripLog != null)
                         {
-                          if(tripLog.Event== "StartMaintainance" || tripLog.Event == "Maintainance")
+                            TruckApiModel truckApiModel = new TruckApiModel();
+                            if(trip.IsConverted==true && trip.ConvertedSeen==false)
                             {
-                                return Ok(new { flag = true, Message = UserMessage.startMaintainance[loginModel.languageId], Data = new TruckApiModel() });
+                                truckApiModel.isConverted = true;
                             }
-                          else if (tripLog.Event == "EndMaintainance")
+                            else
                             {
-                                return Ok(new { flag = true, Message = UserMessage.endMaintainance[loginModel.languageId], Data = new TruckApiModel() });
+                                truckApiModel.isConverted = false;
+                            }
+                            if (tripLog.Event == "StartMaintainance" || tripLog.Event == "Maintainance")
+                            {
+                                return Ok(new { flag = true, Message = UserMessage.startMaintainance[loginModel.languageId], Data = truckApiModel });
+                            }
+                            else if (tripLog.Event == "EndMaintainance")
+                            {
+                                return Ok(new { flag = true, Message = UserMessage.endMaintainance[loginModel.languageId], Data = truckApiModel });
                             }
                             else
                             {
                                 var truck = _context.Trucks.Where(t => t.TruckNumber == trip.TruckNumber).FirstOrDefaultAsync().Result;
                                 if (truck != null)
                                 {
-                                   
-                                        TruckApiModel truckApiModel = new TruckApiModel();
-                                        truckApiModel.truckNumber = truck.TruckNumber;
-                                        truckApiModel.truckId = truck.Id.ToString();
-                                        truckApiModel.truckStatus = truck.status; // "Not Assigned";// truck.status;
-                                        truckApiModel.truckLocationLat = truck.Lat;
-                                        truckApiModel.truckLocationLong = truck.Long;
-                                        //truckApiModel.truckLastCheck = "";//truck.chec
-                                        truckApiModel.truckLastLocation = truck.Location;
-                                        truckApiModel.truckModel = truck.Model;
-                                        truckApiModel.truckYear = truck.Year;
-                                        truckApiModel.truckManufacturer = truck.TruckManufacturer;
-                                        truckApiModel.truckChassis = truck.Chassis;
-                                        truckApiModel.truckEngine = truck.Engine;
-                                        truckApiModel.truckLicenseNumber = truck.LicenceNumber;
-                                        truckApiModel.truckPhoneNumber = truck.PhoneNumber;
-                                        truckApiModel.deviceId = truck.DeviceId;
-                                    
+
+                                    // TruckApiModel truckApiModel = new TruckApiModel();
+                                    truckApiModel.truckNumber = truck.TruckNumber;
+                                    truckApiModel.truckId = truck.Id.ToString();
+                                    truckApiModel.truckStatus = truck.status; // "Not Assigned";// truck.status;
+                                    truckApiModel.truckLocationLat = truck.Lat;
+                                    truckApiModel.truckLocationLong = truck.Long;
+                                    //truckApiModel.truckLastCheck = "";//truck.chec
+                                    truckApiModel.truckLastLocation = truck.Location;
+                                    truckApiModel.truckModel = truck.Model;
+                                    truckApiModel.truckYear = truck.Year;
+                                    truckApiModel.truckManufacturer = truck.TruckManufacturer;
+                                    truckApiModel.truckChassis = truck.Chassis;
+                                    truckApiModel.truckEngine = truck.Engine;
+                                    truckApiModel.truckLicenseNumber = truck.LicenceNumber;
+                                    truckApiModel.truckPhoneNumber = truck.PhoneNumber;
+                                    truckApiModel.deviceId = truck.DeviceId;
+
                                     return Ok(new { flag = true, Message = UserMessage.truckReplaced[loginModel.languageId], Data = truckApiModel });
                                 }
-                                return Ok(new { flag = true, Message = UserMessage.truckReplaced[loginModel.languageId], Data = 0 });
+                                return Ok(new { flag = true, Message = UserMessage.truckReplaced[loginModel.languageId], Data = truckApiModel });//data=0
                             }
 
                                 
@@ -510,8 +614,9 @@ namespace FleetM360_WebApi.Controllers
             //return BadRequest(new { Data = 0, Message = "رقم المستخدم أو كلمة السر خطأ" });
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
         }
-        
-        [HttpPost("sendFuelData")]
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("sendFuelData")]//convert done
         public async Task<ActionResult> sendFuelData([FromForm] sendFuelDataApiModel model)
         {
             DriverModel driver = _driverService.GetDriver(model.userNumber);
@@ -525,8 +630,17 @@ namespace FleetM360_WebApi.Controllers
                     {
                         var Event = _tripLogService.CreateTrepFuelAsync(model).Result;
                         if (Event)
-                        { 
-                            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = "" });
+                        {
+                            convertCheckResult result = new convertCheckResult();
+                            if(trip.IsConverted==true && trip.ConvertedSeen==false)
+                            {
+                                result.isConverted = true;
+                            }
+                            else
+                            {
+                                result.isConverted = false;
+                            }
+                                return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = result });
                         }
                         return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[model.languageId], Data = 0 });
                     }
@@ -540,11 +654,20 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[model.languageId], Data = 0 });
         }
 
-        [HttpPost("getMaintenanceData")]
-        public async Task<ActionResult> getMaintenanceData(int languageId)
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("getMaintenanceData")]//convert done
+        public async Task<ActionResult> getMaintenanceData(UserApiModel loginModel)//(int languageId)
         {
             MaintenanceDataModel maintenanceData = new MaintenanceDataModel();
-           
+            maintenanceData.isConverted = false;
+            var trip = _context.Trips.Where(a => a.Id == Convert.ToInt64(loginModel.tripId)).FirstOrDefault();
+            if (trip != null)
+            {
+                if (trip.IsConverted == true && trip.ConvertedSeen == false)
+                {
+                    maintenanceData.isConverted = true;
+                }
+            }
             maintenanceData.waysToDealWithTruckBreakdowns = await _context.WayToDealWithTruckBreakdowns.Where(a => a.IsVisible == true) // Include AuthorId = 4 if needed
            .Select(a => new WayToDealWithTruckBreakdownsModel
            {
@@ -564,12 +687,13 @@ namespace FleetM360_WebApi.Controllers
           .ToListAsync();
             maintenanceData.responsibleOptions =new List<string>{ "قسم الصيانة","السائق"};
 
-            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[languageId], Data = maintenanceData });
+            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = maintenanceData });
 
 
         }
 
-        [HttpPost("startMaintenance")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("startMaintenance")] // convert done
         public async Task<ActionResult> startMaintenance(sendStopStartTime model)
         {
             
@@ -598,10 +722,19 @@ namespace FleetM360_WebApi.Controllers
                                 type = model.type,
                                 responsibleOption= model.responsibleOption,
                             };
+                            
                             var Event = _tripLogService.CreateStartRoadMaintenanceAsync(model).Result;
                             if (Event)
                             {
-                                return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = result });
+                                if(trip.IsConverted==true && trip.ConvertedSeen==false)
+                                {
+                                    result.isConverted = true;
+                                }
+                                else
+                                {
+                                    result.isConverted = false;
+                                }
+                                    return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = result });
                             }
                             return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[model.languageId], Data = 0 });
                         }
@@ -627,6 +760,14 @@ namespace FleetM360_WebApi.Controllers
                             var Event = _tripLogService.CreateStartStopBanAsync(model).Result;
                             if (Event)
                             {
+                                if (trip.IsConverted == true && trip.ConvertedSeen == false)
+                                {
+                                    result.isConverted = true;
+                                }
+                                else
+                                {
+                                    result.isConverted = false;
+                                }
                                 return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = result });
                             }
                             return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[model.languageId], Data = 0 });
@@ -634,9 +775,7 @@ namespace FleetM360_WebApi.Controllers
                         else
                         {
                             return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[model.languageId], Data = 0 });
-                        }
-                        
-
+                        }                       
                     }
                 }
                 else
@@ -648,7 +787,8 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[model.languageId], Data = 0 });
         }
 
-        [HttpPost("endMaintenance")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("endMaintenance")]   // convert done
         public async Task<ActionResult> endMaintenance(sendStopStartTime model)
         {
             DriverModel driver = _driverService.GetDriver(model.userNumber);
@@ -661,24 +801,36 @@ namespace FleetM360_WebApi.Controllers
                     ApplicationUser aspNetUser = await _userManager.FindByIdAsync(driver.UserId);
                     if (aspNetUser != null)
                     {
+                        convertCheckResult result = new convertCheckResult();
+                        if(trip.IsConverted ==true && trip.ConvertedSeen == false)
+                        {
+                            result.isConverted = true;
+                        }
+                        else
+                        {
+                            result.isConverted = false;
+                        }
                         if (model.type.Trim() == "Maintenance".Trim())
                         {
-                            var waysToDealWithTruckBreakdowns = (model.wayOfDeal != null && model.wayOfDeal != "") ? _context.WayToDealWithTruckBreakdowns.Where(t => t.Name == model.wayOfDeal).FirstOrDefault() :null;
+                            var waysToDealWithTruckBreakdowns = (model.wayOfDeal != null && model.wayOfDeal != "") ? _context.WayToDealWithTruckBreakdowns.Where(t => t.Name == model.wayOfDeal).FirstOrDefault() : null;
                             var causesOfTruckFailure = (model.causeOfFailure != null && model.causeOfFailure != "") ? _context.CauseOfTruckFailures.Where(t => t.Name == model.causeOfFailure).FirstOrDefault() : null;
                             model.causeOfFailure = causesOfTruckFailure != null ? causesOfTruckFailure.Id.ToString() : "";
                             model.wayOfDeal = waysToDealWithTruckBreakdowns != null ? waysToDealWithTruckBreakdowns.Id.ToString() : "";
 
-                            var tripLog = _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.TripNumber == trip.TripNumber &&t.IsVisible==true && (t.Event == "StartMaintainance" || t.Event == "TruckConverted" || t.Event == "EndMaintainance" || t.Event == "Maintainance")).OrderBy(t => t.Id).LastOrDefaultAsync().Result;
+                            var tripLog = _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.TripNumber == trip.TripNumber && t.IsVisible == true && (t.Event == "StartMaintainance" || t.Event == "StartRoadMaintenance" || t.Event == "TruckConverted" || t.Event == "EndMaintainance" || t.Event == "Maintainance")).OrderBy(t => t.Id).LastOrDefaultAsync().Result;
                             // var groupedTrips = await _tripService.GettruckFaults(loginModel);
                             if (tripLog != null)
                             {
+                                
                                 if (tripLog.Event == "StartMaintainance" || tripLog.Event == "Maintainance")
                                 {
-                                    return Ok(new { flag = true, Message = UserMessage.startMaintainance[model.languageId], Data = UserMessage.roadStartMaintainance[model.languageId] });
+                                    result.maintenanceFeedback = UserMessage.roadStartMaintainance[model.languageId];
+                                    return Ok(new { flag = true, Message = UserMessage.startMaintainance[model.languageId], Data = result });
                                 }
-                                else if (tripLog.Event == "EndMaintainance")
+                                else if (tripLog.Event == "EndMaintainance" ||tripLog.Event== "EndRoadMaintenance")
                                 {
-                                    return Ok(new { flag = true, Message = UserMessage.endMaintainance[model.languageId], Data = UserMessage.roadEndMaintainance[model.languageId] });
+                                    result.maintenanceFeedback = UserMessage.roadEndMaintainance[model.languageId];
+                                    return Ok(new { flag = true, Message = UserMessage.endMaintainance[model.languageId], Data = result });
                                 }
                                 else if (tripLog.Event == "TruckConverted")
                                 {
@@ -702,36 +854,34 @@ namespace FleetM360_WebApi.Controllers
                                         truckApiModel.truckLicenseNumber = truck.LicenceNumber;
                                         truckApiModel.truckPhoneNumber = truck.PhoneNumber;
                                         truckApiModel.deviceId = truck.DeviceId;
-
-                                        return Ok(new { flag = true, Message = UserMessage.truckReplaced[model.languageId], Data = UserMessage.roadTruckReplaced[model.languageId] });
+                                        result.maintenanceFeedback = UserMessage.roadTruckReplaced[model.languageId];
+                                        return Ok(new { flag = true, Message = UserMessage.truckReplaced[model.languageId], Data = result });
                                     }
-                                    return Ok(new { flag = true, Message = UserMessage.truckReplaced[model.languageId], Data = UserMessage.roadTruckReplaced[model.languageId] });
+                                    result.maintenanceFeedback = UserMessage.roadTruckReplaced[model.languageId];
+                                    return Ok(new { flag = true, Message = UserMessage.truckReplaced[model.languageId], Data = result });
                                 }
                                 else
                                 {
                                     var Event = _tripLogService.CreateEndRoadMaintenanceAsync(model).Result;
                                     if (Event)
                                     {
-                                        return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = "" });
+                                        result.maintenanceFeedback = UserMessage.roadEndMaintainance[model.languageId];
+                                        return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = result });
                                     }
                                 }
-
-
                             }
-
-                           
                             return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[model.languageId], Data = 0 });
                         }
                         else if (model.type.Trim() == "Ban".Trim())
                         {
-                           // var waysToDealWithTruckBreakdowns = _context.WayToDealWithTruckBreakdowns.Where(t => t.Name == model.wayOfDeal).FirstOrDefault();
+                            // var waysToDealWithTruckBreakdowns = _context.WayToDealWithTruckBreakdowns.Where(t => t.Name == model.wayOfDeal).FirstOrDefault();
                             var causesOfTruckFailure = _context.StopOptions.Where(t => t.Label_EN == model.causeOfFailure || t.Label_AR == model.causeOfFailure).FirstOrDefault();
                             model.causeOfFailure = causesOfTruckFailure != null ? causesOfTruckFailure.id.ToString() : "";
                             model.wayOfDeal = "";//waysToDealWithTruckBreakdowns != null ? waysToDealWithTruckBreakdowns.Id.ToString() : "";
                             var Event = _tripLogService.CreateEndStopBanAsync(model).Result;
                             if (Event)
                             {
-                                return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = "" });
+                                return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = result });
                             }
                             return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[model.languageId], Data = 0 });
                         }
@@ -753,7 +903,8 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[model.languageId], Data = 0 });
         }
 
-        [HttpPost("getTake5Data")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("getTake5Data")]//convert done
         public async Task<ActionResult> getTake5Data([Bind(include: "DriverNumber")] UserApiModel loginModel)
         {
             DriverModel driver = _driverService.GetDriver(loginModel.UserNumber);
@@ -766,6 +917,15 @@ namespace FleetM360_WebApi.Controllers
                     var take5APIData = await _tripService.GetTake5DataForMobile(loginModel);
                     if (take5APIData != null)
                     {
+                        var trip = _context.Trips.Where(a => a.Id == Convert.ToInt64(loginModel.tripId)).FirstOrDefault();
+                        take5APIData.isConverted = false;
+                        if (trip != null)
+                        {
+                            if (trip.IsConverted == true && trip.ConvertedSeen == false)
+                            {
+                                take5APIData.isConverted = true;
+                            }
+                        }
                         return Ok(new { flag = true, Message = UserMessage.Done[loginModel.languageId], Data = take5APIData });
                     }
                     else
@@ -777,7 +937,8 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[loginModel.languageId], Data = 0 }); // FailedAccount
         }
 
-        [HttpPost("sendTake5Data")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("sendTake5Data")] //convert done
         public async Task<ActionResult> sendTake5Data(sendTake5DataApiModel model)
         {
 
@@ -791,10 +952,15 @@ namespace FleetM360_WebApi.Controllers
                     ApplicationUser aspNetUser = await _userManager.FindByIdAsync(driver.UserId);
                     if (aspNetUser != null)
                     {                                 
-                            var Event = _tripLogService.CreateSiteProcessingAsync(model).Result;
+                        var Event = _tripLogService.CreateSiteProcessingAsync(model).Result;
                         if (Event)
                         {
-                            bool subTripFlag=false;
+                            bool isConverted = false;
+                            if(trip.IsConverted==true && trip.ConvertedSeen == false)
+                            {
+                                isConverted = true;
+                            }
+                            bool subTripFlag = false;
                             bool parentFlag = false;
                             LocationApiModel _plant = new LocationApiModel()
                             {
@@ -869,7 +1035,7 @@ namespace FleetM360_WebApi.Controllers
                                     }
                                 }
                             }
-                            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = new { parentFlag = parentFlag, subTripFlag, plant= _plant } });
+                            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = new { parentFlag = parentFlag, subTripFlag, plant= _plant, isConverted= isConverted } });
                         }
                             return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[model.languageId], Data = 0 });                        
                     }
@@ -883,8 +1049,9 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[model.languageId], Data = 0 });
         }
 
-        [HttpPost("truckArrivalData")]
-        public async Task<ActionResult> truckArrivalData(TruckStatusApiModel model)
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("truckArrivalData")] //convert done
+        public async Task<ActionResult> truckArrivalData(TruckStatusApiModel model) // plant / site 
         {
             if (model == null)
                 return BadRequest(new { flag = false, Message = "Error in truck Status", Data = 0 });
@@ -903,7 +1070,17 @@ namespace FleetM360_WebApi.Controllers
                         var Event = _tripLogService.CreateArriveSiteAsync(model).Result;
                         if (Event)
                         {
-                            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = "" });
+                            convertCheckResult result = new convertCheckResult();
+                            result.screen = "";
+                            if(trip.IsConverted==true && trip.ConvertedSeen == false)
+                            {
+                                result.isConverted = true;
+                            }
+                            else
+                            {
+                                result.isConverted = false;
+                            }
+                            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = result });
                         }
                         return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[model.languageId], Data = 0 });
                     }
@@ -916,8 +1093,8 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[model.languageId], Data = 0 });
         }
 
-
-        [HttpPost("leavePlant")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("leavePlant")] //convert done
         public async Task<ActionResult> leavePlant([Bind(include: "userNumber")] UserApiModel loginModel)
         {
             DriverModel driver = _driverService.GetDriver(loginModel.UserNumber);
@@ -955,10 +1132,19 @@ namespace FleetM360_WebApi.Controllers
                             };
                             _context.TripLogs.Add(tripLog);
                             await _context.SaveChangesAsync();
-
+                            convertCheckResult result = new convertCheckResult();
+                            result.screen = "";
+                            if(trip.IsConverted==true && trip.ConvertedSeen == false)
+                            {
+                                result.isConverted = true;
+                            }
+                            else
+                            {
+                                result.isConverted = false;
+                            }
 
                             // return Ok(new { Data = homeData, Message = "Successful Process" });
-                            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = "" });
+                            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = result });
                         }
                     }
                     return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[loginModel.languageId], Data = 0 });
@@ -969,7 +1155,8 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[loginModel.languageId], Data = 0 }); // FailedAccount
         }
 
-        [HttpPost("sendMaintenanceStartTime")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("sendMaintenanceStartTime")]               //////////////////////////////////////////////////////////////////Not applied ///////////////////////for start corrective maintainance
         public async Task<ActionResult> sendMaintenanceStartTime([Bind(include: "userNumber")] sendMaintenanceEndTime loginModel)
         {
             DriverModel driver = _driverService.GetDriver(loginModel.userNumber);
@@ -996,7 +1183,7 @@ namespace FleetM360_WebApi.Controllers
                                             ParentTrip = trip.ParentTrip,
                                             TripNumber = trip.TripNumber,
                                             Event = "Maintainance",
-                                            LogId = 3,
+                                            LogId = tripLog.Id,
                                             Lat = loginModel.lat,
                                             Long = loginModel.lng,
                                             CreatedBy = loginModel.userNumber.ToString(),
@@ -1021,6 +1208,9 @@ namespace FleetM360_WebApi.Controllers
                             _context.Trucks.Update(truck);
                             await _context.SaveChangesAsync();
 
+                           // convertCheckResult result = new convertCheckResult();
+                            
+
                             return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = 0 });
                         }
                         return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[loginModel.languageId], Data = 0 });
@@ -1036,7 +1226,8 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[loginModel.languageId], Data = 0 }); // FailedAccount
         }
 
-        [HttpPost("sendMaintenanceEndTime")]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("sendMaintenanceEndTime")] ///////////////////////Check if corrective maintainance end or not               
         public async Task<ActionResult> sendMaintenanceEndTime([Bind(include: "userNumber")] sendMaintenanceEndTime loginModel)
         {
             DriverModel driver = _driverService.GetDriver(loginModel.userNumber);
@@ -1045,25 +1236,29 @@ namespace FleetM360_WebApi.Controllers
                 ApplicationUser aspNetUser = await _userManager.FindByIdAsync(driver.UserId);
                 if (aspNetUser != null)
                 {
-                    //var truck = await _truckRepository.Find(e => e.IsVisible == true && e.Id == Convert.ToInt64(loginModel.truckId)).FirstOrDefaultAsync();
-                    //if (truck != null)
-                    //{
-                    //    if (truck.status == "Maintainance")
-                    //    {
-                    //        return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[loginModel.languageId], Data = 0 }); // FailedAccount
-                    //    }
-                    //}
+                    var truck = await _context.Trucks.Where(e => e.IsVisible == true && e.Id == Convert.ToInt64(loginModel.truckId)).FirstOrDefaultAsync();
+                    if (truck != null)
+                    {
+                        if (truck.status == "Maintainance")
+                        {                            
+                           return Ok(new { flag = true, Message = UserMessage.startMaintainance[loginModel.languageId], Data = "" });
+                        }
+                        else
+                        {
+                            return Ok(new { flag = true, Message = UserMessage.endMaintainance[loginModel.languageId], Data = "" });
+                        }
+                    }
                     // return Ok(new { Data = homeData, Message = "Successful Process" });
-                    return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = "" });
-
+                    return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[loginModel.languageId], Data = 0 }); // FailedAccount
+                  
                 }
+                return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[loginModel.languageId], Data = 0 }); // FailedAccount
             }
             //return BadRequest(new { Data = 0, Message = "رقم المستخدم أو كلمة السر خطأ" });
             return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[loginModel.languageId], Data = 0 }); // FailedAccount
         }
 
-
-
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("sendMaintenanceStartTimeislam")]
         public async Task<ActionResult> sendMaintenanceStartTimeislam([Bind(include: "userNumber")] sendMaintenanceEndTime loginModel)
         {
@@ -1100,6 +1295,7 @@ namespace FleetM360_WebApi.Controllers
             //return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[loginModel.languageId], Data = 0 }); // FailedAccount
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("getWeightInfo")]
         public async Task<ActionResult> getWeightInfo(UserApiModel loginModel)
         {
@@ -1120,7 +1316,7 @@ namespace FleetM360_WebApi.Controllers
                         {
                             weightDataApiModel.grossWeight.startTime = tripLogg.CreatedDate;
                             weightDataApiModel.grossWeight.endTime = tripLogg.CreatedDate;
-                            weightDataApiModel.grossWeight.weight = 96.480;
+                            weightDataApiModel.grossWeight.weight = trip.Qty;
                         }
                         var tripLog = await _context.TripLogs.Where(t => t.ParentTrip == trip.ParentTrip && t.TripNumber == trip.TripNumber && t.Event == "EmptyWeight" && t.IsVisible == true).FirstOrDefaultAsync();
                         if (tripLog != null)
@@ -1140,6 +1336,35 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("covertedSeen")]
+        public async Task<ActionResult> covertedSeen(UserApiModel loginModel)
+        {
+            DriverModel driver = _driverService.GetDriver(loginModel.UserNumber);
+            if (driver != null)
+            {
+                var trip = _context.Trips.Where(a => a.Id == Convert.ToInt64(loginModel.tripId)).FirstOrDefault();
+                if (trip != null)
+                {
+                    ApplicationUser aspNetUser = await _userManager.FindByIdAsync(driver.UserId);
+                    if (aspNetUser != null)
+                    {
+                        trip.ConvertedSeen=true;
+                        trip.UpdatedDate = DateTime.Now;
+                        _context.Trips.Update(trip);
+                        await _context.SaveChangesAsync();
+                        return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[loginModel.languageId], Data = 0 });
+                    }
+                }
+                else
+                {
+                    return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[loginModel.languageId], Data = 0 });
+                }
+            }
+            return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[loginModel.languageId], Data = 0 });
+        }
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("test")]
         public async Task<ActionResult> test([Bind(include: "userNumber")] sendMaintenanceEndTime loginModel)
         {
@@ -1166,9 +1391,8 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[loginModel.languageId], Data = 0 }); // FailedAccount
         }
 
-
-
-        [HttpPost("testSapTrip")]
+        
+        [HttpPost("testSapTrip")]  //from sap
         public async Task<ActionResult> testSapTrip(SapTripVM model)
         {
             
@@ -1197,37 +1421,269 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[1], Data = 0 }); // FailedAccount
         }
 
-        [HttpPost("sendTripWeight")]
+        [HttpPost("sendTripWeight")]  //from sap
         public async Task<ActionResult> sendTripWeight(WeightSapModel model)
         {
 
             if (model != null)
             {
-                var tripp= await _context.Trips.Where(t=>t.IsVisible && t.TripNumber==Convert.ToInt64(model.TripNumber)).ToListAsync();
-                TripWeight trip = new TripWeight()
+                var trip = await _context.Trips.Where(t => t.IsVisible && t.TripNumber == Convert.ToInt64(model.TripNumber)).FirstOrDefaultAsync();
+                TripWeight tripp = new TripWeight()
                 {
-                    TripNumber=Convert.ToInt64(model.TripNumber),
-                    ParentTrip=1,
-                    TruckNumber=model.TruckNumber,
-                    CreatedBy="Sap",
-                    Weight=model.weight,
-                    Type=model.WeightType,
-                    IsDelted=false,
-                    IsVisible=true,
-                    CreatedDate= DateTime.Now,
-                    UpdatedDate= DateTime.Now
+                    TripNumber = Convert.ToInt64(model.TripNumber),
+                    ParentTrip = 1,
+                    TruckNumber = model.TruckNumber,
+                    CreatedBy = "Sap",
+                    Weight = model.weight,
+                    Type = model.WeightType,
+                    IsDelted = false,
+                    IsVisible = true,
+                    CreatedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now
                 };
-                _context.tripWeights.Add(trip);
+                _context.tripWeights.Add(tripp);
                 await _context.SaveChangesAsync();
+                if (trip != null)
+                {
+                    var Event = _context.LogLookups.Where(t => t.IsVisible == true && t.LogName == "GrossWeight".Trim()).FirstOrDefault();
+                    if (Event != null)
+                    {
+                        TripLog tripLog = new TripLog()
+                        {
+                            ParentTrip = trip.ParentTrip,
+                            TripNumber = trip.TripNumber,
+                            Event = Event.LogName,
+                            LogId = Event.Id,
+                            // Lat = model.lat,
+                            // Long = model.lng,
+                            CreatedBy = "sap",// model.UserNumber.ToString(),
+                            Date = DateTime.Now.ToString(),
+                            CreatedDate = DateTime.Now,
+                            UpdatedDate = DateTime.Now,
+                            IsDelted = false,
+                            IsVisible = true
+                        };
+                        _context.TripLogs.Add(tripLog);
+                        await _context.SaveChangesAsync();
+
+                        //return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = "" });
+                    }
+                    trip.StageAR = "قيد الفحص";
+                    trip.StageEn = "Under Inspection";
+                    trip.UpdatedDate = DateTime.Now;
+                    _context.Trips.Update(trip);
+                    await _context.SaveChangesAsync();
+                    var truck = await _context.Trucks.Where(t => t.IsVisible == true && t.TruckNumber == trip.TruckNumber).FirstOrDefaultAsync();
+                    if (truck != null)
+                    {
+                        var drivers=await _context.TripDrivers.Where(t=>t.TripNumber == trip.TripNumber).ToListAsync();
+                        if(drivers != null)
+                        {
+                            if(drivers.Count > 0)
+                            {
+                                SocketMessageApiModel message=new SocketMessageApiModel();
+                                message.status = "gross_weight_ended";
+                                message.time = DateTime.Now;
+                                message.Weight_value=model.weight.ToString();
+                                foreach (var driver in drivers)
+                                {
+                                    await _wsService.SendMessageToUserAsync((int)driver.DriverId, truck.Id.ToString(), JsonSerializer.Serialize(message));
+                                    return Ok("Notification sent.");
+                                }
+                            }
+                        }
+                    }
+                   // await _wsService.SendMessageToUserAsync(userNumber, truckId, JsonSerializer.Serialize(message));
+                    
+                }
+
                 return Ok(new { flag = true, Message = "Done Done ", Data = trip });
             }
             //return BadRequest(new { Data = 0, Message = "رقم المستخدم أو كلمة السر خطأ" });
             //send to admin
-            return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[1], Data = 0 }); // FailedAccount
+            //return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[1], Data = 0 }); // FailedAccount
+            //sen admin notification
+
+            return Ok(new { flag = true, Message = "Done Done ", Data = 0 });
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("sendTake5DataByStage")]
+        public async Task<ActionResult> sendTake5DataByStage(sendTake5DataByStageApiModel model)
+        {
 
+            DriverModel driver = _driverService.GetDriver(model.userNumber);
+            if (driver != null)
+            {
+                var trip = _context.Trips.Where(a => a.Id == Convert.ToInt64(model.tripId)).FirstOrDefault();
+                if (trip != null)
+                {
 
+                    ApplicationUser aspNetUser = await _userManager.FindByIdAsync(driver.UserId);
+                    if (aspNetUser != null)
+                    {
+                        var loc = await _context.PlannedTripLocations.Where(t => t.Id == model.tripLocationId).FirstOrDefaultAsync();
+                        if (model.stage == 1)
+                        {
+                            
+                            if(loc != null)
+                            {
+                                if (loc.Converted == true)
+                                {
+                                    return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = new { isConverted=true } });
+                                }
+                            }
+                        }
+                        var Event = _tripLogService.CreateSiteProcessingByStageAsync(model).Result;
+                        if (Event)
+                        {
+                            //start reverse convert
+                            if (loc != null)
+                            {
+                                if (loc.Converted == true)
+                                {
+                                    var convertion = await _context.TripConvertLocations.Where(t => t.IsVisible == true && t.OldLocId == loc.Id).OrderBy(t => t.Id).LastOrDefaultAsync();
+                                    if(convertion != null)
+                                    {
+                                        var convertionList = await _context.TripConvertLocations.Where(t => t.IsVisible == true && t.TripConvertId == convertion.TripConvertId).ToListAsync();
+                                        if(convertionList != null)
+                                        {
+                                            if (convertionList.Count > 0)
+                                            {
+                                                foreach(var item in convertionList)
+                                                {
+                                                    var old = await _context.PlannedTripLocations.Where(t => t.Id == item.OldLocId).FirstOrDefaultAsync();
+                                                    var last = await _context.PlannedTripLocations.Where(t => t.Id == item.NewLocId).FirstOrDefaultAsync();
+                                                    if(old != null)
+                                                    {
+                                                        old.IsDelted = false;
+                                                        old.IsVisible = true;
+                                                        old.Converted = false;
+                                                        old.UpdatedDate = DateTime.Now;
+                                                        _context.PlannedTripLocations.Update(old);
+                                                        await _context.SaveChangesAsync();
+                                                    }
+                                                    if (last != null)
+                                                    {
+                                                        last.IsDelted = false;
+                                                        last.IsVisible = true;
+                                                        last.Converted = false;
+                                                        last.UpdatedDate = DateTime.Now;
+                                                        _context.PlannedTripLocations.Update(last);
+                                                        await _context.SaveChangesAsync();
+                                                    }
+                                                }
+                                            }
+                                           
+                                        }
+                                        trip.IsConverted = false;
+                                        trip.ConvertedSeen = true;
+                                        trip.UpdatedDate = DateTime.Now;
+                                        _context.Trips.Update(trip);
+                                        await _context.SaveChangesAsync();
+                                    }
+                                }
+                            }
+                            //End reverse convert
+
+                            bool subTripFlag = false;
+                            bool parentFlag = false;
+                            LocationApiModel _plant = new LocationApiModel()
+                            {
+                                address = "مصنع اسمنت اسيوط",
+                                lat = 27.179130902288716,
+                                lng = 31.022034339860536
+                            };
+                            var arrived = await _context.TripLogs.Where(t => t.IsVisible == true && t.ParentTrip == trip.ParentTrip && t.Event == "AutomaticArrivePlant").FirstOrDefaultAsync();
+                            _plant.arrivalFlag = arrived != null ? true : false;
+                            var actuallocations = await _context.ActualTripLocations.Where(b => b.PlannedTripLocationId == model.tripLocationId).OrderBy(b => b.Id).LastOrDefaultAsync();
+                            var planned = await _context.PlannedTripLocations.Where(t => t.IsVisible == true && t.Id == model.tripLocationId).FirstOrDefaultAsync();
+                            if (planned != null)
+                            {
+                                if (planned.locationStatus == false && model.stage==4) //(actuallocations.Remain == 0)
+                                {
+                                    var subLocations = await _context.PlannedTripLocations.Where(t => t.IsVisible == true && t.TripNumber == actuallocations.TripNumber && t.ParentTrip == actuallocations.ParentTrip).ToListAsync();
+                                    if (subLocations != null)
+                                    {
+                                        if (subLocations.Count > 0)
+                                        {
+                                            foreach (var location in subLocations)
+                                            {
+                                                if (location.locationStatus == true)
+                                                {
+                                                    subTripFlag = false;
+                                                    parentFlag = false;
+                                                    break;
+                                                }
+                                                else
+                                                {
+                                                    subTripFlag = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (subTripFlag == true)
+                                    {
+                                        trip.StageAR = "تم التسليم";
+                                        trip.StageEn = "Completed";
+                                        trip.UpdatedDate = DateTime.Now;
+                                        _context.Trips.Update(trip);
+                                        await _context.SaveChangesAsync();
+                                        var allTrips = await _context.Trips.Where(t => t.ParentTrip == actuallocations.ParentTrip).ToListAsync();
+                                        if (allTrips.Count > 0)
+                                        {
+                                            foreach (var tr in allTrips)
+                                            {
+                                                if (tr.StageEn != "Completed" && tr.StageEn != "Canceled")
+                                                {
+                                                    parentFlag = false;
+                                                    break;
+                                                }
+                                                else
+                                                {
+                                                    parentFlag = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[model.languageId], Data = new { parentFlag = parentFlag, subTripFlag, plant = _plant } });
+                        }
+                        return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[model.languageId], Data = 0 });
+                    }
+                }
+                else
+                {
+                    return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[model.languageId], Data = 0 });
+                }
+            }
+            //return BadRequest(new { Data = 0, Message = "رقم المستخدم أو كلمة السر خطأ" });
+            return BadRequest(new { flag = false, Message = UserMessage.LoginInvalidNumber[model.languageId], Data = 0 });
+        }
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("covertedtest")]
+        public async Task<ActionResult> covertedtest(long tripId)
+        {
+            var trip = _context.Trips.Where(a => a.Id ==tripId).FirstOrDefault();
+            if (trip != null)
+            {
+
+                trip.ConvertedSeen = false;
+                trip.IsConverted = true;
+                trip.UpdatedDate = DateTime.Now;
+                _context.Trips.Update(trip);
+                await _context.SaveChangesAsync();
+                return Ok(new { flag = true, Message = UserMessage.SuccessfulProcess[1], Data = 0 });
+
+            }
+            else
+            {
+                return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[1], Data = 0 });
+            }
+         
+        }
     }
-   
+
 }

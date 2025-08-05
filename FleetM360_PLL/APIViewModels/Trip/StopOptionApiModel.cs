@@ -16,6 +16,11 @@ namespace FleetM360_PLL.APIViewModels.Trip
         public string? iconBath { get; set; }
         public string? color { get; set; }
     }
+    public class StopOptionModel
+    {
+        public bool? isConverted { get; set; }
+        public List<StopOptionApiModel> StopOptions { get; set; }
+    }
     public class StopDataApiModel
     {
         public int languageId { get; set; }
@@ -29,6 +34,7 @@ namespace FleetM360_PLL.APIViewModels.Trip
         public int stopOptionId {  get; set; }
     }
     public class FuelDataModel{
+        public bool? isConverted { get; set; }
        public List<GasStationModel>gasStations { get; set; }
         public List<CashPaymentMethodModel>cashPaymentMethodModel { get; set; }
     }

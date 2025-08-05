@@ -21,6 +21,7 @@ namespace FleetM360_PLL.ViewModels
         public string? PersonalPhoto { get; set; }
 
         public string? UserToken { get; set; }
+        public string? MobileToken { get; set; }
         public bool? ConditionsAccept { get; set; }
         public long Id { get; set; }
 

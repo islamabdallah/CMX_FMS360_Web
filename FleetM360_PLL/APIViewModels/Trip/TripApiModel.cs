@@ -22,9 +22,12 @@ namespace FleetM360_PLL.APIViewModels.Trip
         public userApiModel driver { get; set; }
         public List<TripApiModel> trips { get; set; }
         public int userUnSeenNotificationCount { get; set; }
+        public LocationApiModel? plant {  get; set; }
+        public string? screen {  get; set; }
     }
     public class SubTripApiModel
     {
+        public bool? isConverted { get; set; }
         public string? truckNumber { get; set; }
         public string? truckId { get; set; }
         public string? tripId { get; set; }
@@ -56,6 +59,9 @@ namespace FleetM360_PLL.APIViewModels.Trip
         public double? lng { get; set; }
         public double? qty { get; set; }
         public double? remainqty { get; set; }
+        public bool? canConvert { get; set; }
+        public long? jobsiteId { get; set; }
+        public bool? arrivalFlag { get; set; }
 
     }
     public class userApiModel

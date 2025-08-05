@@ -11,7 +11,7 @@ namespace FleetM360_PLL.Services.Contracts
     {
         List<DriverModel> GetAllDrivers();
         Task<bool> CreateDriver(DriverModel model);
-        //Task<bool> UpdateDriver(DriverModel model);
+        Task<bool> UpdateDriver(DriverModel model);
         //bool DeleteDriver(long id);
         DriverModel GetDriver(long id);
         Task<bool> AcceptCondition(DriverModel model);

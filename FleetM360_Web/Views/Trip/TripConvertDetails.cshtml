@@ -1,0 +1,619 @@
+﻿@model FleetM360_PLL.ViewModels.SubTripDetailsViewModel
+@using static FleetM360_PLL.CommanData;
+
+@{
+    int Count = 0;
+}
+<link href="https://cdn.jsdelivr.net/npm/bs-stepper/dist/css/bs-stepper.min.css" rel="stylesheet">
+
+<style>
+    .stepper-content {
+    padding: 2rem;
+    }
+</style>
+<style>
+    .select2-container--open {
+    z-index: 1056 !important;
+    }
+</style>
+@* <div class="container mt-3"> *@
+<h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Trip /</span> Edit SapTrip</h4>
+
+
+<div class="row">
+
+    <!-- Total Revenue -->
+    <div class="col-12 col-lg-12 order-2 order-md-3 order-lg-2 mb-4">
+        <div class="card">
+            <div class="row row-bordered g-0">
+                <div class="col-md-12">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Sap Trip Info</h5>
+                        <small class="text-muted float-end">Fixed trip info</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-4 col-lg-4 mb-3">
+
+                                <p>Trip Number: <code class="language-plaintext highlighter-rouge" id="Naa">@Model.trip.TripNumber </code></p>
+                            </div>
+
+                            <div class="col-4 col-lg-4 mb-3">
+                                <p>
+                                    Truck Number: <code class="language-plaintext highlighter-rouge" id="Stt">
+                                        @Model.trip.TruckNumber
+                                    </code>
+                                </p>
+                            </div>
+
+                            <div class="col-4 col-lg-4 mb-3">
+                                <p>
+                                    Silo Number: <code class="language-plaintext highlighter-rouge" id="Stt">
+                                        @Model.trip.SiloNumber
+                                    </code>
+                                </p>
+                            </div>
+
+                            <div class="col-12">
+
+                                <button type="button" class="btn btn-secondary"
+                                onclick='openConvertModal(
+                                        "@Model.trip.TripNumber",
+                                        @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.remainLocations)),
+                                        @Model.AllRemainQty,
+                                        @Model.trip.SubTypeId)'>
+                                    Convert All Remain Quantity
+                                </button>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!--/ Total Revenue -->
+    <!-- Total Revenue -->
+    <div class="col-12 col-lg-12 order-2 order-md-3 order-lg-2 mb-4">
+        <div class="card">
+            <div class="row row-bordered g-0">
+                <div class="col-md-12">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Edit Trip</h5>
+                        <small class="text-muted float-end">update trip's departureDate'</small>
+                    </div>
+                    <div class="card-body">
+
+                        <form class="row g-3" asp-action="EditTripDate">
+
+                            <input type="number" name="Parent" value="@Model.trip.ParentTrip" hidden/>
+                            <input type="number" name="TripNumber" value="@Model.trip.TripNumber" hidden/>
+
+                            <div class="col-6 col-lg-6 mb-3">
+                                <label class="form-label" for="sapTrip.Id">DepartureDate</label>
+                                <div class="input-group input-group-merge">
+
+                                    <input type="datetime-local"
+                                    value="@Model.trip.departureDate.ToString("yyyy-MM-ddTHH:mm")"
+                                    id="basic-icon-default-email"
+                                    name="DepartureDate"
+                                    class="form-control"
+                                    aria-label="john.doe"
+                                    aria-describedby="basic-icon-default-email2" required />
+
+                                </div>
+
+                            </div>
+
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Change Date</button>
+                            </div>
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!--/ Total Revenue -->
+    <!-- Total Revenue -->
+    @if (Model != null)
+    {
+        @foreach (var tr in Model.toLocations)
+        {
+            Count = @Count + 1;
+            <div class="col-12 col-lg-12 order-2 order-md-3 order-lg-2 mb-4">
+                <div class="card">
+                    <div class="row row-bordered g-0">
+                        <div class="col-md-12">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+
+                                <h5 class="mb-0">POD # <span>@Count</span></h5>
+                                <small class="text-muted float-end">JobSite Details</small>
+                            </div>
+                            <div class="card-body">
+
+                                <div class="row">
+                                    <div class="col-6 col-lg-6 mb-3">
+
+                                        <p>Customer Name: <code class="language-plaintext highlighter-rouge" id="Naa">@tr.customerName </code></p>
+                                    </div>
+
+                                    <div class="col-6 col-lg-6 mb-3">
+                                        <p>
+                                            customer Phone Number: <code class="language-plaintext highlighter-rouge" id="Stt">
+                                                @tr.customerPhoneNumber
+                                            </code>
+                                        </p>
+                                    </div>
+
+                                    <div class="col-6 col-lg-6 mb-3">
+
+                                        <p>Quantity: <code class="language-plaintext highlighter-rouge" id="Naa">
+                                                @tr.qty
+                                            </code></p>
+                                       
+                                    </div>
+
+                                    <div class="col-6 col-lg-6 mb-3">
+                                        <p>
+                                            Material Name: <code class="language-plaintext highlighter-rouge" id="Stt">
+                                                @tr.materialType
+                                            </code>
+                                        </p>
+                                    </div>
+                                    <div class="col-6 col-lg-6 mb-3">
+                                        <p>
+                                            Remain Quantity: <code class="language-plaintext highlighter-rouge" id="Stt">
+                                                @tr.remainqty
+                                            </code>
+                                        </p>
+                                    </div>
+                                    <div class="col-6 col-lg-6 mb-3">
+                                        <p>
+                                            Jobsite Id: <code class="language-plaintext highlighter-rouge" id="Stt">
+                                                @tr.jobsiteId
+                                            </code>
+                                        </p>
+                                    </div>
+                                    <div class="col-12">
+                                        @if (tr.canConvert == true)
+                                        {
+                                            <button type="button" class="btn btn-primary"
+                                            onclick='openConvertModal(
+                                        "@Model.trip.TripNumber",
+                                        @Html.Raw(System.Text.Json.JsonSerializer.Serialize(tr.tripLocationId)),
+                                        @tr.remainqty,
+                                        @Model.trip.SubTypeId)'>
+                                                Convert JopSite
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-primary"
+                                                    onclick='ConvertTripNotAllowed()' disabled>
+                                                Convert Trip Location
+                                            </button>
+                                            <span id="" class="input-text" style="color:red;" > This location can't be converted it is @Model.trip.StageEn</span>
+                                        }
+                                        
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <!--/ Total Revenue -->
+        }
+    }
+
+
+
+</div>
+
+<div class="modal fade" id="exLargeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel4">Modal title</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div id="myStepper" class="bs-stepper">
+                        <div class="bs-stepper-header" role="tablist">
+                            <div class="step" data-target="#step-1">
+                                <button type="button" class="step-trigger" role="tab"
+                                        id="step-1-trigger" aria-controls="step-1">
+                                    <span class="bs-stepper-circle">1</span>
+                                    <span class="bs-stepper-label">Trip Info</span>
+                                </button>
+                            </div>
+                            <div class="line"></div>
+                            <div class="step" data-target="#step-2">
+                                <button type="button" class="step-trigger" role="tab"
+                                        id="step-2-trigger" aria-controls="step-2">
+                                    <span class="bs-stepper-circle">2</span>
+                                    <span class="bs-stepper-label">Locations Info</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bs-stepper-content">
+                            <div id="step-1" class="content" role="tabpanel" aria-labelledby="step-1-trigger">
+                                <div class="stepper-content">
+                                    <div class="row">
+                                        <div class="col-6 col-lg-6 mb-3">
+
+                                            <p>Trip Number: <code class="language-plaintext highlighter-rouge" id="LNaa"> </code></p>
+                                        </div>
+
+                                        <div class="col-6 col-lg-6 mb-3">
+                                            <p>
+                                                Remain Qty: <code class="language-plaintext highlighter-rouge" id="LStt">
+                                                </code>
+                                            </p>
+                                        </div>
+
+
+                                    </div>
+
+                                    <input type="hidden" id="parentt" />
+                                    <input type="hidden" id="loct" />
+                                    <input type="hidden" id="qtyt" />
+                                    <input type="hidden" id="subt" />
+                                   
+                                        <div class="col-6 col-lg-6 mb-3">
+                                            <label for="Distination" class="form-label">Destination</label>
+
+                                            <input id="SelectedEmployeeNumbers23" value="" hidden />
+
+                                        <input type="hidden" id="lmType" />
+                                            <select class="form-control form-select col-md-1" id="multiSelect23" name="multiSelect23[]" multiple="multiple" style="width: 100%;" asp-items="@(new SelectList(Model.JobSites, "Id", "Desc"))">
+                                                <option value="-1" disabled>Select Destination</option>
+                                            </select>
+                                            <span id="destT" class="input-group-text" style="color:red;" hidden>Select Destination Location</span>
+                                        </div>
+                                                                           
+                                    </div>
+
+
+                                    <button class="btn btn-primary" onclick="validateAndGoNext()">Next</button>
+                                </div>
+                            </div>
+                            <div id="step-2" class="content" role="tabpanel" aria-labelledby="step-2-trigger">
+                                <div class="stepper-content">
+
+                                    <div class="col-12 col-lg-12 mb-3" id="lmtableDiv23">
+                                        <div class="form-group" id="lmtable23">
+                                            <label for="recipient-name" class="col-form-label">Destination location Details:</label>
+                                            <span id="DistQtyT" class="input-group-text" style="color:red;" hidden>Add Quantity for Destination</span>
+                                            @*  <table class="table table-bordered" id="ResourceTable"> *@
+                                            <table class="table datatable align-items-center mb-0" id="ResourceTable23">
+                                                <thead>
+
+                                                <th hidden>Id</th>
+                                                <th hidden>Name</th>
+                                                <th hidden>Latitude</th>
+                                                <th hidden>Longitude</th>
+                                                <th>Desc</th>
+                                                <th>Qty</th>
+                                                <th>Material</th>
+                                                </th>
+                                                <tbody id="lmtbody23">
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-secondary me-2" onclick="stepper.previous()">Back</button>
+                                    <button type="button" class="btn btn-primary" onclick="convert()">Convert Trip</button>
+                                    <span id="MatchT" class="input-group-text" style="color:red;" hidden>Quantity of source not Matched with Quantity of destination</span>
+                                    @* <button class="btn btn-success">Finish</button> *@
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                   
+
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- bs-stepper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          window.stepper = new Stepper(document.querySelector('#myStepper'), {
+            linear: true,
+            animation: true
+          });
+        });
+    </script>
+
+
+    <script>
+       
+        $(document).ready(function () {
+            $('#onRoadDrivers').select2({
+                allowClear: true
+            });
+
+            $('#multiSelect23').select2({
+                placeholder: "Select Destination",
+                width: '100%'
+            });
+
+             $('#multiSelect23').on('change', function () {
+                        var selectedValues = $(this).val();  // Get selected values as an array
+                        console.log(selectedValues);  // Logs the selected values to the console
+                        document.getElementById("SelectedEmployeeNumbers23").value = selectedValues;
+                        console.log("test");
+                        console.log(document.getElementById("SelectedEmployeeNumbers23").value);
+
+                                var lmids23 = document.getElementById("SelectedEmployeeNumbers23").value;
+                                        var tval23= document.getElementById("lmType").value;
+                        //var lmentity = document.getElementById("select-users").value;
+                        if (lmids23 == "") {
+                           // alert("Please select Items");
+                        }
+
+                        else {
+                            // alert(lmids23);
+                            $.ajax({
+                                    url: '@Url.Content("~/")' + "Trip/GetItems",
+                                                data: { Id: lmids23, type: tval23},
+                                type: "POST",
+                                async: true,
+                                success: function (data) {
+                                    if (data != null) {
+                                        var dataJSON = JSON.parse(data);
+                                        //alert(dataJSON.length);
+
+                                                if (dataJSON["sites"].length > 0) {
+                                            var tbody = document.getElementById("lmtbody23");// $('#ResourceTable tbody');//
+                                            tbody.innerHTML = "";
+                                                    document.getElementById("lmtableDiv23").hidden = false;
+                                                    for (var index = 0; index < dataJSON["sites"].length; index++) {
+                                                // alert(dataJSON[index]['DrugName']);
+                                                var row = document.createElement("tr");
+                                                var td1 = document.createElement("td");
+                                                var td2 = document.createElement("td");
+                                                td2.setAttribute("class", "modernWay");
+                                                td1.hidden=true;
+                                                td2.hidden=true;
+                                                // td2.setAttribute("colspan", "2");
+                                                var td3 = document.createElement("td");
+                                                var td4 = document.createElement("td");
+                                                td3.hidden=true;
+                                                td4.hidden=true;
+                                                var td5 = document.createElement("td");
+                                                var td6 = document.createElement("td");
+                                                    var td7 = document.createElement("td");
+                                                // td5.setAttribute("class", "modernWay");
+                                                        td1.innerHTML = dataJSON["sites"][index]['Id'];
+                                                            td2.innerHTML = dataJSON["sites"][index]['Name'];
+                                                            td3.innerHTML = dataJSON["sites"][index]['Latitude'];
+                                                            td4.innerHTML = dataJSON["sites"][index]['Longitude'];
+                                                            td6.innerHTML = dataJSON["sites"][index]['Desc'];
+                                                var inp = document.createElement("input");
+                                                inp.setAttribute("class", "form-control");
+                                                inp.setAttribute("type", "number");
+                                                inp.value = 0;
+                                                td5.appendChild(inp);
+                                                              // 2. Create the select element (no id, no multiple)
+            const selectElement = document.createElement("select");
+            //selectElement.name = "drivers"; // optional: add name for form submission
+            selectElement.style.width = "100%";
+                            selectElement.setAttribute("class", "form-control");
+            // 3. Add a default placeholder option
+            const placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.text = "Select a Material";
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            selectElement.appendChild(placeholder);
+
+            // 4. Populate with driver options
+                            dataJSON["materials"].forEach(driver => {
+                const option = document.createElement("option");
+                        option.value = driver.ProductId;
+                                option.text = `${driver.ProductId} - ${driver.ProductNameAR}`;
+                selectElement.appendChild(option);
+            });
+                                                            td7.appendChild(selectElement);
+                                                row.appendChild(td1);
+                                                row.appendChild(td2);
+                                                row.appendChild(td3);
+                                                row.appendChild(td4);
+                                                row.appendChild(td6);
+                                                row.appendChild(td5);
+                                                    row.appendChild(td7);
+                                                tbody.appendChild(row);
+                                            }
+
+                                        }
+                                        //$('#exampleModalMessage').modal('show');
+                                    }
+                                    else {
+                                        alert("failed");
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                      $('#multiSelect23').select2({
+                            dropdownParent: $('#exLargeModal .modal-body #step-1')
+                });
+                          $('#exLargeModal').on('hidden.bs.modal', function () {
+            $('#multiSelect23').val(null).trigger('change');
+           
+                                             document.getElementById("lmtableDiv23").hidden = true;
+            // Add other Select2 elements as needed
+            });
+
+        });
+        </script>
+       <script>
+               function openConvertModal(num, locs, qty, subType) {
+                   //alert(subType);
+                  document.getElementById("LNaa").innerHTML=num;
+                    document.getElementById("LStt").innerHTML=qty;
+                     document.getElementById("lmType").value=subType;
+
+             document.getElementById("parentt").value=num;
+                    document.getElementById("loct").value=JSON.stringify(locs);//locs;//.join(",");//locs;
+                     document.getElementById("qtyt").value=qty;
+                      document.getElementById("subt").value=subType;
+            // Show the modal
+            $('#exLargeModal').modal('show');
+        }
+
+       </script>
+
+    <script>
+        function convert(){
+            //alert("hi");
+            var SoQty= parseFloat(document.getElementById("qtyt").value);
+            var DistQty=0;
+             var array=JSON.parse(document.getElementById("loct").value);//
+             //alert(array);
+             console.log(array);
+             var TypeId= parseInt(document.getElementById("subt").value);
+        //distination
+         var headers23 = []
+        $('#ResourceTable23 thead th').each(function (i) {
+            headers23.push($(this).text())
+        })
+        // result array
+        var array23 = [];
+        $('#ResourceTable23 tr').each(function (i) {
+            // declare object variable but dont set it's value
+            // unless there are objects to find
+            var rowObj
+            $(this).find('td').each(function (i) {
+                if (!rowObj) rowObj = {}
+                if (headers23[i] == "Qty") {
+                    // alert(headers[i]);
+                    console.log(headers23[i]);
+                    DistQty += parseFloat(this.firstChild.value);
+                    //alert(DistQty);
+                    rowObj[headers23[i]] = this.firstChild.value;
+                }
+                else if (headers23[i] == "Material") {
+                    // alert(headers[i]);
+                    console.log(headers23[i]);
+                    //alert(headers[i]);
+                    rowObj[headers23[i]] = this.firstChild.value;
+                }
+                else {
+                    rowObj[headers23[i]] = $(this).text()
+                }
+            });
+            if (rowObj) array23.push(rowObj)
+        });
+        // alert("done");
+        // alert(array);
+        console.log(array23)
+            //var id=document.getElementById("TruckId").value;
+             var responseModel =
+        {
+            TripNumber: parseInt(document.getElementById("parentt").value),
+            Qty:  parseFloat(document.getElementById("qtyt").value),
+        };
+
+        console.log(responseModel);
+
+                    if(DistQty == 0 && (TypeId==2 || TypeId==1)){
+                       //document.getElementById("SoQtyT").hidden=true;
+                       document.getElementById("DistQtyT").hidden=false;
+                   }                  
+                    else if(SoQty != DistQty){
+                       //document.getElementById("SoQtyT").hidden=true;
+                       document.getElementById("DistQtyT").hidden=true;
+                        document.getElementById("MatchT").hidden=false;
+                      // document.getElementById("lmqtyT").hidden=false;
+                   }
+                   else{
+                       //alert("Done");
+                      // alert(SoQty);
+                       //alert(DistQty)
+                        //document.getElementById("SoQtyT").hidden=true;
+                       document.getElementById("DistQtyT").hidden=true;
+                        document.getElementById("MatchT").hidden=true;
+                        responseModel.Qty=parseFloat(SoQty);
+         $.ajax({
+            url: '@Url.Content("~/")' + "Trip/AddResponseConvert",
+            data: { responseModel: responseModel , Destination: array23 , Source: array },
+            async: true,
+            type: "POST",
+            success: function (data) {
+               if (data.redirectUrl) {
+                var form = $('<form></form>');
+                form.attr("method", "POST");
+                form.attr("action", data.redirectUrl);
+                $.each(responseModel, function (key, value) {
+                    var input = $('<input></input>').attr({
+                        type: 'hidden',
+                        name: key,
+                        value: value
+                    });
+                    form.append(input);
+                });
+                $('body').append(form);
+                form.submit();
+            } else {
+                alert("Failed to redirect.");
+            }
+
+            },
+            error: function () {
+            alert("An error occurred.");
+        }
+        });
+        }
+        }
+    </script>
+
+
+
+    <script>
+        function validateAndGoNext() {
+          
+
+                       // Move to the next step
+                stepper.next();
+                   
+
+        }
+    </script>
+    
+}
+

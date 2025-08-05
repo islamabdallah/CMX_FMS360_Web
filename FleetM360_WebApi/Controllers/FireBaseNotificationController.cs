@@ -18,12 +18,13 @@ namespace FleetM360_WebApi.Controllers
         [HttpPost("send")]
         public async Task<IActionResult> SendNotification([FromBody] NotificationRequest request)
         {
-            var messageId = await _firebaseNotificationService.SendNotificationAsync(
+            //var messageId =
+                await _firebaseNotificationService.SendNotificationAsync(
                 request.DeviceToken,
                 request.Title,
                 request.Body);
 
-            return Ok(new { MessageId = messageId });
+            return Ok(new { MessageId = 1 });//messageId });
         }
     }
     public class NotificationRequest

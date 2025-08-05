@@ -8,6 +8,7 @@ namespace FleetM360_PLL.APIViewModels.Hazard
 {
     public class MaintenanceDataModel
     {
+        public bool? isConverted { get; set; }
         public List<CauseOfTruckFailureModel> causesOfTruckFailure { get; set; }
         public List<WayToDealWithTruckBreakdownsModel> waysToDealWithTruckBreakdowns { get; set; }
         public List<string> responsibleOptions { get; set; }
@@ -42,6 +43,7 @@ namespace FleetM360_PLL.APIViewModels.Hazard
 
     public class StopModel
     {
+        public bool? isConverted { set; get; }
         public string? causeOfFailure { set; get; }
         public string? wayOfDeal { set; get; }
         public string? driverComment { set; get; }

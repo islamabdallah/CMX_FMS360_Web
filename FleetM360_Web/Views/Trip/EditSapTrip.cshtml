@@ -1,6 +1,8 @@
 ﻿@model FleetM360_PLL.ViewModels.SapTripVModel
 @using static FleetM360_PLL.CommanData;
-
+@{
+    int Count = 0;
+ }
 @* <div class="container mt-3"> *@
 <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Trip /</span> Edit SapTrip</h4>
 
@@ -13,193 +15,230 @@
             <div class="row row-bordered g-0">
                 <div class="col-md-12">
                     <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Sap Trip Info</h5>
+                        <small class="text-muted float-end">Fixed trip info</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-4 col-lg-4 mb-3">
+
+                                <p>Trip Number: <code class="language-plaintext highlighter-rouge" id="Naa">@Model.sapTrip.TripNumber </code></p>
+                            </div>
+
+                            <div class="col-4 col-lg-4 mb-3">
+                                <p>
+                                    Truck Number: <code class="language-plaintext highlighter-rouge" id="Stt">
+                                        @ViewBag.truckSilo.TruckNumber
+                                    </code>
+                                </p>
+                            </div>
+
+                            <div class="col-4 col-lg-4 mb-3">
+                                <p>
+                                    Silo Number: <code class="language-plaintext highlighter-rouge" id="Stt">
+                                        @ViewBag.truckSilo.SiloNumber
+                                    </code>
+                                </p>
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!--/ Total Revenue -->
+    <!-- Total Revenue -->
+    <div class="col-12 col-lg-12 order-2 order-md-3 order-lg-2 mb-4">
+        <div class="card">
+            <div class="row row-bordered g-0">
+                <div class="col-md-12">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Edit Sap Trip</h5>
                         <small class="text-muted float-end">Approve and create trip</small>
                     </div>
                     <div class="card-body">
+
                         <form class="row g-3" asp-action="EditSapTrip">
 
-                            <div class="col-6 col-lg-4 mb-3">
+                            <div class="col-6 col-lg-4 mb-3" hidden>
                                 <label class="form-label" for="sapTrip.Id">SapTripId</label>
                                 <div class="input-group input-group-merge">
 
                                     <input type="number"
-                                       asp-for="sapTrip.Id" 
-                                       id="basic-icon-default-email"
-                                           class="form-control"
-                                           placeholder="Qty"
-                                           aria-label="john.doe"
-                                           aria-describedby="basic-icon-default-email2" readonly />
+                                    asp-for="sapTrip.Id" 
+                                    id="basic-icon-default-email"
+                                    class="form-control"
+                                    placeholder="Qty"
+                                    aria-label="john.doe"
+                                    aria-describedby="basic-icon-default-email2"  />
 
                                 </div>
 
                             </div>
-                            <div class="col-6 col-lg-4 mb-3">
+                            <div class="col-6 col-lg-4 mb-3" hidden>
                                 <label class="form-label" for="sapTrip.Id">TripNumber</label>
                                 <div class="input-group input-group-merge">
 
                                     <input type="number"
-                                           asp-for="sapTrip.TripNumber"
-                                           id="basic-icon-default-email"
-                                           class="form-control"
-                                           placeholder="Qty"
-                                           aria-label="john.doe"
-                                           aria-describedby="basic-icon-default-email2" readonly />
+                                    asp-for="sapTrip.TripNumber"
+                                    id="basic-icon-default-email"
+                                    class="form-control"
+                                    placeholder="Qty"
+                                    aria-label="john.doe"
+                                    aria-describedby="basic-icon-default-email2" readonly />
 
                                 </div>
 
                             </div>
 
-                            <div class="col-6 col-lg-4 mb-3">
+                            <div class="col-6 col-lg-4 mb-3" hidden>
                                 <label class="form-label" for="sapTrip.Id">TruckNumber</label>
                                 <div class="input-group input-group-merge">
 
                                     <input type="text"
-                                           asp-for="sapTrip.TruckNumber"
-                                           id="basic-icon-default-email"
-                                           class="form-control"
-                                           placeholder="Qty"
-                                           aria-label="john.doe"
-                                           aria-describedby="basic-icon-default-email2" readonly />
+                                    asp-for="sapTrip.TruckNumber"
+                                    id="basic-icon-default-email"
+                                    class="form-control"
+                                    placeholder="Qty"
+                                    aria-label="john.doe"
+                                    aria-describedby="basic-icon-default-email2" readonly />
 
                                 </div>
 
                             </div>
-                            <div class="col-6 col-lg-4 mb-3">
+                            <div class="col-6 col-lg-4 mb-3" hidden>
                                 <label class="form-label" for="sapTrip.Id">Jobsite Number</label>
                                 <div class="input-group input-group-merge">
 
                                     <input type="number"
-                                           asp-for="sapTrip.jobsiteNumber"
-                                           id="basic-icon-default-email"
-                                           class="form-control"
-                                           placeholder="Qty"
-                                           aria-label="john.doe"
-                                           aria-describedby="basic-icon-default-email2" readonly />
+                                    asp-for="sapTrip.jobsiteNumber"
+                                    id="basic-icon-default-email"
+                                    class="form-control"
+                                    placeholder="Qty"
+                                    aria-label="john.doe"
+                                    aria-describedby="basic-icon-default-email2" readonly />
 
                                 </div>
 
                             </div>
 
-                            <div class="col-6 col-lg-4 mb-3">
+                            <div class="col-6 col-lg-6 mb-3">
                                 <label class="form-label" for="sapTrip.Id">DepartureDate</label>
                                 <div class="input-group input-group-merge">
 
                                     <input type="datetime-local"
-                                           asp-for="sapTrip.departureDate"
-                                           id="basic-icon-default-email"
-                                           class="form-control"
-                                         
-                                           aria-label="john.doe"
-                                           aria-describedby="basic-icon-default-email2" />
+                                    asp-for="sapTrip.departureDate"
+                                    id="basic-icon-default-email"
+                                    class="form-control"
+
+                                    aria-label="john.doe"
+                                    aria-describedby="basic-icon-default-email2" required/>
 
                                 </div>
 
                             </div>
-                            <div class="col-6 col-lg-4 mb-3">
+                            <div class="col-6 col-lg-4 mb-3" hidden>
                                 <label class="form-label" for="sapTrip.Id">ArrivalDate</label>
                                 <div class="input-group input-group-merge">
 
                                     <input type="datetime-local"
-                                           asp-for="sapTrip.ArrivedDate"
-                                           id="basic-icon-default-email"
-                                           class="form-control"
-                                         
-                                           aria-label="john.doe"
-                                           aria-describedby="basic-icon-default-email2"  />
+                                    asp-for="sapTrip.ArrivedDate"
+                                    id="basic-icon-default-email"
+                                    class="form-control"
+
+                                    aria-label="john.doe"
+                                    aria-describedby="basic-icon-default-email2"  />
 
                                 </div>
 
                             </div>
 
-                            <div class="col-6 col-lg-4 mb-3">
+                            <div class="col-6 col-lg-4 mb-3" hidden>
                                 <label class="form-label" for="sapTrip.customerNumber">Customer Number</label>
                                 <div class="input-group input-group-merge">
 
                                     <input type="number"
-                                           asp-for="sapTrip.customerNumber"
-                                           id="basic-icon-default-email"
-                                           class="form-control"
-                                           placeholder="Qty"
-                                           aria-label="john.doe"
-                                           aria-describedby="basic-icon-default-email2" readonly />
+                                    asp-for="sapTrip.customerNumber"
+                                    id="basic-icon-default-email"
+                                    class="form-control"
+                                    placeholder="Qty"
+                                    aria-label="john.doe"
+                                    aria-describedby="basic-icon-default-email2" readonly />
 
                                 </div>
 
                             </div>
-                          
-                            <div class="col-6 col-lg-4 mb-3">
+
+                            <div class="col-6 col-lg-4 mb-3" hidden>
                                 <label class="form-label" for="loadDrivers">Loading Drivers</label>
-                               
+
                                 @Html.DropDownListFor(
-                                         model => model.loadDrivers,
-                                         new SelectList(Model.Drivers, "DriverNumber", "DriverNumber"),
-                                         "Select Drivers",
-                                         new { @class = "form-select", @id = "loadDrivers", multiple = "multiple" }
-                                         )
+                                                           model => model.loadDrivers,
+                                                           ViewBag.DriverSelectList as List<SelectListItem>,
+                                                           "Select Drivers",
+                                                           new { @class = "form-select", @id = "loadDrivers", multiple = "multiple" }
+                                                           )
                                 @*  <button type="button" id="clearSelections" class="btn btn-danger">Clear Selections</button> *@
 
                             </div>
-                            <div class="col-6 col-lg-4 mb-3">
+
+                            <div class="col-6 col-lg-6 mb-3">
                                 <label class="form-label" for="onRoadDrivers">OnRoad Drivers</label>
-                               
                                 @Html.DropDownListFor(
-                                         model => model.onRoadDrivers,
-                                         new SelectList(Model.Drivers, "DriverNumber", "DriverNumber"),
-                                         "Select Drivers",
-                                         new { @class = "form-select", @id = "onRoadDrivers", multiple = "multiple" }
-                                         )
-
-                                @*  <button type="button" id="clearSelections" class="btn btn-danger">Clear Selections</button> *@
-
+                                                           model => model.onRoadDrivers,
+                                                           ViewBag.DriverSelectList as List<SelectListItem>,
+                                                           new { @class = "form-select", @id = "onRoadDrivers", multiple = "multiple", required = "required" }
+                                                           )
                             </div>
-                           
 
 
-
-                           
-                            <div class="col-6 col-lg-4 mb-3">
+                            <div class="col-6 col-lg-4 mb-3" hidden>
                                 <label class="form-label" for="Qty">Quantity</label>
                                 <div class="input-group input-group-merge">
-                                   
+
                                     <input type="number"
-                                           asp-for="sapTrip.Qty"
-                                           id="basic-icon-default-email"
-                                           class="form-control"
-                                           placeholder="Qty"
-                                           aria-label="john.doe"
-                                           aria-describedby="basic-icon-default-email2" readonly/>
-                                   
+                                    asp-for="sapTrip.Qty"
+                                    id="basic-icon-default-email"
+                                    class="form-control"
+                                    placeholder="Qty"
+                                    aria-label="john.doe"
+                                    aria-describedby="basic-icon-default-email2" readonly/>
+
                                 </div>
-                               
+
                             </div>
-                              <div class="col-6 col-lg-4 mb-3">
+                            <div class="col-6 col-lg-4 mb-3" hidden>
                                 <label class="form-label" for="sapTrip.customerNumber">Material Number</label>
                                 <div class="input-group input-group-merge">
 
                                     <input type="number"
-                                           asp-for="sapTrip.materialNumber"
-                                           id="basic-icon-default-email"
-                                           class="form-control"
-                                           placeholder="Qty"
-                                           aria-label="john.doe"
-                                           aria-describedby="basic-icon-default-email2" readonly />
+                                    asp-for="sapTrip.materialNumber"
+                                    id="basic-icon-default-email"
+                                    class="form-control"
+                                    placeholder="Qty"
+                                    aria-label="john.doe"
+                                    aria-describedby="basic-icon-default-email2" readonly />
 
                                 </div>
 
                             </div>
 
-                            <div class="col-6 col-lg-4 mb-3">
+                            <div class="col-6 col-lg-4 mb-3"hidden>
                                 <label class="form-label" for="sapTrip.customerNumber">MaterialName</label>
                                 <div class="input-group input-group-merge">
 
                                     <input type="text"
-                                           asp-for="MaterialName"
-                                           id="basic-icon-default-email"
-                                           class="form-control"
-                                           placeholder="Qty"
-                                           aria-label="john.doe"
-                                           aria-describedby="basic-icon-default-email2" readonly />
+                                    asp-for="MaterialName"
+                                    id="basic-icon-default-email"
+                                    class="form-control"
+                                    placeholder="Qty"
+                                    aria-label="john.doe"
+                                    aria-describedby="basic-icon-default-email2" readonly />
 
                                 </div>
 
@@ -209,6 +248,7 @@
                                 <button type="submit" class="btn btn-primary">Create Trip</button>
                             </div>
                         </form>
+
                     </div>
 
                 </div>
@@ -217,6 +257,71 @@
         </div>
     </div>
     <!--/ Total Revenue -->
+    <!-- Total Revenue -->
+    @if (ViewBag.trips !=null)
+    {
+        @foreach (var tr in ViewBag.trips)
+        {
+            Count= @Count + 1;
+            <div class="col-12 col-lg-12 order-2 order-md-3 order-lg-2 mb-4">
+                <div class="card">
+                    <div class="row row-bordered g-0">
+                        <div class="col-md-12">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                               
+                                <h5 class="mb-0">POD # <span>@Count</span></h5>
+                                <small class="text-muted float-end">JobSite Details</small>
+                            </div>
+                            <div class="card-body">
+
+                                <div class="row">
+                                    <div class="col-6 col-lg-6 mb-3">
+
+                                        <p>JobSite Number: <code class="language-plaintext highlighter-rouge" id="Naa">@tr.sapTrip.jobsiteNumber </code></p>
+                                    </div>
+
+                                    <div class="col-6 col-lg-6 mb-3">
+                                        <p>
+                                            customer Number: <code class="language-plaintext highlighter-rouge" id="Stt">
+                                                @tr.sapTrip.customerNumber
+                                            </code>
+                                        </p>
+                                    </div>
+
+                                    <div class="col-6 col-lg-6 mb-3">
+
+                                        <p>Material Number: <code class="language-plaintext highlighter-rouge" id="Naa">@tr.sapTrip.materialNumber </code></p>
+                                    </div>
+
+                                    <div class="col-6 col-lg-6 mb-3">
+                                        <p>
+                                            Material Name: <code class="language-plaintext highlighter-rouge" id="Stt">
+                                                @tr.MaterialName
+                                            </code>
+                                        </p>
+                                    </div>
+                                    <div class="col-6 col-lg-6 mb-3">
+                                        <p>
+                                            Quantity: <code class="language-plaintext highlighter-rouge" id="Stt">
+                                                @tr.sapTrip.Qty
+                                            </code>
+                                        </p>
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <!--/ Total Revenue -->
+        }
+    }
+
+   
 
 </div>
 
@@ -228,5 +333,13 @@
 
 @section Scripts {
 
-  
+    <script>
+        $(document).ready(function () {
+            $('#onRoadDrivers').select2({
+                placeholder: "Select Drivers",
+                allowClear: true
+            });
+        });
+    </script>
+
 }

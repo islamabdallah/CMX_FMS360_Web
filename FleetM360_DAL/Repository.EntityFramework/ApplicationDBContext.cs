@@ -23,6 +23,7 @@ namespace FleetM360_DAL.Repository.EntityFramework
         public DbSet<Trip> Trips { get; set; }
 
         public DbSet<PlannedTripLocation> PlannedTripLocations { get; set; }
+        public DbSet<PlannedTripLocationProduct> PlannedTripLocationProducts { get; set; }
 
         public DbSet<ActualTripLocation> ActualTripLocations { get; set; }
         public DbSet<TripDriver> TripDrivers { get; set; }
@@ -58,5 +59,10 @@ namespace FleetM360_DAL.Repository.EntityFramework
         public DbSet<TripWeight> tripWeights { get; set; }
         public DbSet<TruckNotification> TruckNotifications { get; set; }
         public DbSet<Material> Materials { get; set; }
+        public DbSet<TripConvert> TripConverts { get; set; }
+        public DbSet<TripConvertLocation> TripConvertLocations { get; set; }
+        //public DbSet<ShipmentRisk> ShipmentRisks { get; set; }
+        public DbSet<TruckFailure> TruckFailures { get; set; }
+        public DbSet<TruckFailureDetail> TruckFailureDetails { get; set; }
     }
 }

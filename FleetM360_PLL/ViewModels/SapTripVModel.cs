@@ -11,10 +11,17 @@ namespace FleetM360_PLL.ViewModels
     public class SapTripVModel
     {
         public SapTrip sapTrip { get; set; }
+        //public List<SapTrip> sapTrips { get; set; }
         public string MaterialName {  get; set; }
         public List<long> loadDrivers { get; set; }
         public List<long> onRoadDrivers { get; set; }
-        public List<DriverModel> Drivers { get; set; }
+       // public List<DriverModel> Drivers { get; set; }
+    }
+
+    public class SapTripViewModel
+    {
+        public SapTrip sapTrip { get; set; }
+       public TruckSilo truckSilo { get; set; }
     }
 
     public class SupTrippVModel
@@ -48,5 +55,17 @@ namespace FleetM360_PLL.ViewModels
         public DateTime departureDate { get; set; }
 
        
+    }
+    public class ConvertResponseApiModel
+    {
+        public long TripNumber { get; set; }
+        //public long TripNumber { get; set; }//Sap Number
+       
+
+        public double Qty { get; set; }
+
+       
+
+
     }
 }

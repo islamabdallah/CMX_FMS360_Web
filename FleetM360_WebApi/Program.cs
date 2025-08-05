@@ -79,8 +79,8 @@ builder.Services.AddScoped<ITermsConditionsService, TermsConditionsService>();
 builder.Services.AddScoped<IPreCheckService, PreCheckService>();
 builder.Services.AddScoped<ITripLogService, TripLogService>();
 builder.Services.AddScoped<IRiskService, RiskService>();
-builder.Services.AddScoped<IFirebaseNotificationService, FirebaseNotificationService>();
-
+builder.Services.AddScoped<IFirebaseNotificationService, FirebaseNotificationService>(); 
+builder.Services.AddScoped<ShipmentRiskRepository>();
 
 // Dependency Injection
 builder.Services.AddSingleton<InMemoryWebSocketStore>();
@@ -101,11 +101,12 @@ builder.Services.Configure<MvcOptions>(options =>
 });
 
 
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var key = Encoding.ASCII.GetBytes(jwtSettings["Secret"]);
+var jwtIssuer = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
+var jwtKey = builder.Configuration.GetSection("Jwt:Key").Get<string>();
 builder.Services.AddAuthentication();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+ .AddJwtBearer(authenticationScheme: JwtBearerDefaults.AuthenticationScheme,
+    options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -113,27 +114,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Secret"]))
-        };
-
-        // Add logging
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = context =>
-            {
-                Console.WriteLine($"Auth failed: {context.Exception.Message}");
-                return Task.CompletedTask;
-            },
-            OnTokenValidated = context =>
-            {
-                Console.WriteLine("Token validated!");
-                return Task.CompletedTask;
-            }
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtIssuer,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ClockSkew = TimeSpan.Zero
         };
     });
-
 
 builder.Services.AddAuthorization();
 

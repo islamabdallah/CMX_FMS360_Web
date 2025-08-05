@@ -9,10 +9,12 @@ using FleetM360_PLL.Services.Contracts;
 using FleetM360_PLL.Services.Contracts.TermsConditions;
 using FleetM360_PLL.Services.Implementation;
 using FleetM360_PLL.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -122,6 +124,7 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Data = 0, Message = "رقم المستخدم أو كلمة السر خطأ" });
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("userLoginHomeData")]
         public async Task<ActionResult> userLoginHomeData([Bind(include: "DriverNumber")] LoginModel loginModel)
         {
@@ -143,6 +146,7 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { Data = 0, Message = "رقم المستخدم أو كلمة السر خطأ" });
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("activeTripsSummary")] 
         public async Task<ActionResult> activeTripsSummary([Bind(include: "DriverNumber")] UserApiModel loginModel)
         {
@@ -158,13 +162,65 @@ namespace FleetM360_WebApi.Controllers
                         return BadRequest(new { flag = false, Message = UserMessage.FailedProcess[loginModel.languageId], Data = 0 }); // FailedAccount                       
                     }
                     HomeDataModel homeData = new HomeDataModel();
+                    bool hasActiveTrip = false;
                     homeData.driver = new userApiModel();
                     homeData.driver.userPhoneNumber = driver.PhoneNumber;
                     homeData.driver.userNumber = driver.DriverNumber.ToString();
                     homeData.driver.userName = driver.FullName;
                     homeData.trips = await _tripService.GetAllPendingTripofTruckforMobile(loginModel.truckId, loginModel.languageId);
+                    homeData.screen = "";
+                    if(homeData.trips !=null)
+                    {
+                        if (homeData.trips.Count > 0)
+                        {
+                            if (homeData.trips[0].subTrips !=null)
+                            {
+                                if (homeData.trips[0].subTrips.Count > 0)
+                                {
+                                    foreach(var trip in homeData.trips[0].subTrips)
+                                    {
+                                        if (trip.start == 1)
+                                        {
+                                            hasActiveTrip = true;
+                                            break;
+                                        }
+                                    }
+                                    var last = await _context.TripLogs.Where(t => t.IsVisible == true && t.ParentTrip == Convert.ToInt64(homeData.trips[0].tripId)).OrderBy(t=>t.Id).LastOrDefaultAsync();
+                                    if (hasActiveTrip==false)
+                                    {
+                                        if(last != null)
+                                        {
+                                            if(last.Event== "Maintainance" || truck.status== "Maintainance")
+                                            {
+                                                homeData.screen = "PlantMaintenanceScreen";
+                                            }
+                                            else
+                                            {
+                                                homeData.screen = "SplashWidget";
+                                                homeData.plant = new LocationApiModel()
+                                                {
+                                                    address = "مصنع اسمنت اسيوط",
+                                                    lat = 27.179130902288716,
+                                                    lng = 31.022034339860536
+                                                };
+                                                var arrived= await _context.TripLogs.Where(t => t.IsVisible == true && t.ParentTrip == Convert.ToInt64(homeData.trips[0].tripId) && t.Event== "AutomaticArrivePlant").FirstOrDefaultAsync();
+                                                homeData.plant.arrivalFlag=arrived !=null? true : false;
+                                            }
+                                        }
+
+                                    }
+
+                                }
+                            }
+                            
+                        }
+                    }
                     var userNotificationModels = await _context.TruckNotifications.Where(UN => UN.TruckNumber == truck.TruckNumber && UN.Seen==false).ToListAsync();
                     homeData.userUnSeenNotificationCount = userNotificationModels !=null?userNotificationModels.Count : 0;
+                    if (truck.status == "Maintainance")
+                    {
+                        homeData.screen = "PlantMaintenanceScreen";
+                    }
                     return Ok(new { flag = true, Message = UserMessage.Done[loginModel.languageId], Data = homeData });
 
                 }
@@ -172,6 +228,7 @@ namespace FleetM360_WebApi.Controllers
             return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[loginModel.languageId], Data = 0 }); // FailedAccount
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("activetripDetails")]
         public async Task<ActionResult> activetripDetails([Bind(include: "DriverNumber")] UserApiModel loginModel)
         {
@@ -195,5 +252,206 @@ namespace FleetM360_WebApi.Controllers
             }
             return BadRequest(new { flag = false, Message = UserMessage.LoginFailed[loginModel.languageId], Data = 0 }); // FailedAccount
         }
+
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("mobileToken")]
+        public async Task<ActionResult> UpdateToken(string userNumber, string newToken, string languageId)
+        {
+            DriverModel driver = _driverService.GetDriver(Convert.ToInt64(userNumber));
+          
+                bool result = false;
+            if (driver != null)
+            {
+                //EmployeeModel employeeModel = _EmployeeService.GetEmployeeByUserId(userId).Result;
+                driver.MobileToken = newToken;
+                result = _driverService.UpdateDriver(driver).Result;
+            }
+            if (result == true)
+            {
+                return Ok(new { Message = UserMessage.SuccessfulProcess[Convert.ToInt32(languageId)], Data = true });
+            }
+            else
+            {
+                return BadRequest(new { Message = UserMessage.InvalidEmployeeData[Convert.ToInt32(languageId)], Data = false });
+            }
+        }
+
+        //[AllowAnonymous]
+        [HttpPost("refreshTokenOld")]
+        public async Task<IActionResult> RefreshTokenOld(TokenModel tokenModel, int languageId)
+        {
+            if (tokenModel == null || string.IsNullOrWhiteSpace(tokenModel.AccessToken) || string.IsNullOrWhiteSpace(tokenModel.RefreshToken)) //(tokenModel is null)
+            {
+                return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 });
+                // return Unauthorized(new { Message = "emptyModel", Data = 0 });
+            }
+
+            string? accessToken = tokenModel.AccessToken;
+            string? refreshToken = tokenModel.RefreshToken;
+
+            var principal = _employeeService.GetPrincipalFromExpiredToken(accessToken);
+            if (principal == null)
+            {
+                return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 });
+            }
+            else
+            {
+                if (principal.Result != null)
+                {
+                    var principalIdentity = principal.Result.Identity;
+                    if (principalIdentity != null)
+                    {
+                        string username = principalIdentity.Name;
+
+                        var user = await _userManager.FindByNameAsync(username);
+
+                        if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
+                        {
+                            return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 }); ;
+                        }
+
+                        var newAccessToken = _employeeService.GenerateAccessToken(principal.Result.Claims.ToList());
+                        //var newRefreshToken = GenerateRefreshToken();
+
+                        //user.RefreshToken = newRefreshToken;
+                        //await _userManager.UpdateAsync(user);
+
+                        //var userUpdateRefreshTokenResult = await _userManager.UpdateAsync(user);
+                        //End Token
+
+                        if (newAccessToken != null)
+                        {
+                            TokenModel newTokenModel = new TokenModel()
+                            {
+                                RefreshToken = tokenModel.RefreshToken,
+                                AccessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken.Result),
+                            };
+                            return Ok(new { Message = UserMessage.Done[languageId], Data = newTokenModel });
+                        }
+                        else
+                        {
+                            return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 });
+                        }
+                    }
+                    else
+                    {
+                        return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 });
+                    }
+                }
+                else
+                {
+                    return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 });
+                }
+
+            }
+
+
+        }
+
+
+        [HttpPost("refreshTokenUpdate")]
+        public async Task<IActionResult> RefreshTokenUpdate(TokenModel tokenModel, int languageId)
+        {
+            if (tokenModel == null || string.IsNullOrWhiteSpace(tokenModel.AccessToken) || string.IsNullOrWhiteSpace(tokenModel.RefreshToken))
+            {
+                return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 });
+            }
+
+            // Step 1: Try to extract the principal from the expired access token
+            var principal = await _employeeService.GetPrincipalFromExpiredToken(tokenModel.AccessToken);
+            if (principal == null)
+            {
+                return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 });
+            }
+
+            string username = principal.Identity?.Name;
+
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 });
+            }
+
+            // Step 2: Find the user and validate the refresh token
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null ||
+                user.RefreshToken != tokenModel.RefreshToken ||
+                user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 });
+            }
+
+            // Step 3: Generate a new access token (optionally refresh token too)
+            var newAccessToken = await _employeeService.GenerateAccessToken(principal.Claims.ToList());
+
+            if (newAccessToken == null)
+            {
+                return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 });
+            }
+
+            var response = new TokenModel
+            {
+                AccessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
+                RefreshToken = tokenModel.RefreshToken  // Reuse old refresh token unless you want to rotate
+            };
+
+            return Ok(new { Message = UserMessage.Done[languageId], Data = response });
+        }
+
+
+        [HttpPost("refreshToken")]
+        public async Task<IActionResult> RefreshToken(TokenModel tokenModel, int languageId)
+        {
+            // التحقق من أن النموذج (Model) يحتوي على التوكنات
+            if (tokenModel == null ||
+                string.IsNullOrWhiteSpace(tokenModel.AccessToken) ||
+                string.IsNullOrWhiteSpace(tokenModel.RefreshToken))
+            {
+                return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 });
+            }
+
+            string? accessToken = tokenModel.AccessToken;
+            string? refreshToken = tokenModel.RefreshToken;
+
+            // استخراج بيانات المستخدم من التوكن المنتهي
+            var principal = await _employeeService.GetPrincipalFromExpiredToken(accessToken);
+
+            if (principal == null || principal.Identity == null || string.IsNullOrEmpty(principal.Identity.Name))
+            {
+                return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 });
+            }
+
+            string username = principal.Identity.Name;
+
+            // البحث عن المستخدم في قاعدة البيانات
+            var user = await _userManager.FindByNameAsync(username);
+
+            // التحقق من صلاحية الـ Refresh Token
+            if (user == null ||
+                user.RefreshToken != refreshToken ||
+                user.RefreshTokenExpiryTime <= DateTime.Now)
+            {
+                return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 });
+            }
+
+            // توليد Access Token جديد
+            var newAccessToken = _employeeService.GenerateAccessToken(principal.Claims.ToList());
+
+            if (newAccessToken == null || newAccessToken.Result == null)
+            {
+                return Unauthorized(new { Message = UserMessage.WrongToken[languageId], Data = 0 });
+            }
+
+            // تجهيز نموذج التوكن الجديد للإرجاع
+            var newTokenModel = new TokenModel
+            {
+                RefreshToken = refreshToken, // يمكنك أيضاً تجديده إذا أردت
+                AccessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken.Result)
+            };
+
+            return Ok(new { Message = UserMessage.Done[languageId], Data = newTokenModel });
+        }
+
+
     }
 }

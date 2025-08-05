@@ -1,10 +1,15 @@
 ﻿using FleetM360_DAL.Models.MasterModels;
 using FleetM360_DAL.Models.MasterModels.HazardData;
+using FleetM360_DAL.Repository.EntityFramework;
 using FleetM360_PLL.APIViewModels.Hazard;
+using FleetM360_PLL.APIViewModels.Trucks;
 using FleetM360_PLL.Services.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 
 namespace FleetM360_WebApi.Controllers
 {
@@ -14,20 +19,17 @@ namespace FleetM360_WebApi.Controllers
     {
 
         private IRiskService _service;
-       // private IRiskService _riskService;
-       // private IShipmentStatusService _shipmentStatusService;
+        private readonly ApplicationDBContext _context;
 
         public HazardRiskController(
-          IRiskService service
-         // IRiskService riskService
-         // IShipmentStatusService shipmentStatusService
+          IRiskService service, ApplicationDBContext context
          )
         {
             _service = service;
-            //_riskService = riskService;
-            //_shipmentStatusService = shipmentStatusService;
+            _context = context;
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         [Route("AllRisk")]
         public async Task<IActionResult> GetRisks(ApiTemplate template)
@@ -47,7 +49,8 @@ namespace FleetM360_WebApi.Controllers
                     message = "Error",
                     data = 0
                 });
-            List<ApiTemplate> apiTemplateList = new List<ApiTemplate>();
+            ApiTemplateModel apiTemplateModel = new ApiTemplateModel();
+            apiTemplateModel.risks = new List<ApiTemplate>();
             foreach (Risk riskBusinessModel in allAsyncByCountry)
             {
                 ApiTemplate apiTemplate = new ApiTemplate()
@@ -56,24 +59,38 @@ namespace FleetM360_WebApi.Controllers
                     Risk_AR = riskBusinessModel.RiskText,
                     Risk_EN = riskBusinessModel.RiskText,
                     Active = riskBusinessModel.Active,
-                    Lat = riskBusinessModel.Lat,
+                    Lat =riskBusinessModel.Lat,
                     Long = riskBusinessModel.Long,
                     RiskLevel = riskBusinessModel.RiskLevel.RiskLevel_EN,
                     Country = riskBusinessModel.Country,
                     Company = riskBusinessModel.Company,
                     Destination = riskBusinessModel.Destination
                 };
-                apiTemplateList.Add(apiTemplate);
+                apiTemplateModel.risks.Add(apiTemplate);
+            }
+            apiTemplateModel.isConverted = false;
+            if (!string.IsNullOrEmpty(template.Shipment_ID))
+            {
+                var trip = await _context.Trips.Where(t => t.IsVisible == true && t.Id == Convert.ToInt64(template.Shipment_ID)).FirstOrDefaultAsync();
+
+                if (trip != null)
+                {
+                    if (trip.IsConverted == true && trip.ConvertedSeen == false)
+                    {
+                        apiTemplateModel.isConverted = true;
+                    }
+                }
+
             }
             return (IActionResult)Ok((object)new
             {
                 flag = true,
                 message = "Done",
-                data = apiTemplateList
+                data = apiTemplateModel
             });
         }
 
-
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         [Route("Add")]
         public async Task<IActionResult> Add([FromBody] ApiTemplate template)
@@ -84,9 +101,10 @@ namespace FleetM360_WebApi.Controllers
                 {
                     Shipment_ID = template.Shipment_ID,
                     Risk_ID = template.Risk_ID.ToString(),
-                    lat = template.Lat,
-                    Long = template.Long,
+                    lat = template.Lat.ToString(),
+                    Long = template.Long.ToString(),
                     DriverMobile = template.MobileNumber,
+                    DriverNumber = template.MobileNumber,
                     Country = template.Country,
                     Company = template.Company
                 };
@@ -95,31 +113,68 @@ namespace FleetM360_WebApi.Controllers
                     return BadRequest(new { flag = false, message = "Error, Cannot add the driver feedback", data = 0 });
                 if (result == -1)
                     return BadRequest(new { flag = false, message = "DriverFeedback is Already exist", data = 0 });
+                convertCheckResult resultt = new convertCheckResult();
 
-                //var number = await _service.GetNumberUnReadAsync(template);
-                //await _hubContext.Clients.All.SendAsync("Notify", number, driverFeedback);
-                return Ok(new { flag = true, message = "DriverFeedback is Add", data = 0 });
+                resultt.isConverted = false;
+                if (!string.IsNullOrEmpty(template.Shipment_ID))
+                {
+                    var trip = await _context.Trips.Where(t => t.IsVisible == true && t.Id == Convert.ToInt64(template.Shipment_ID)).FirstOrDefaultAsync();
+                   
+                    if(trip != null)
+                    {
+                        if (trip.IsConverted == true && trip.ConvertedSeen == false)
+                        {
+                            resultt.isConverted = true;
+                        }
+                    }
+                  
+                }
+                return Ok(new { flag = true, message = "DriverFeedback is Add", data = resultt });
             }
             return BadRequest(new { flag = false, message = "Error, Cannot add the driver feedback", data = 0 });
         }
 
-        //[HttpPost]
-        // [Route("Update")]
-        //public async Task<IActionResult> Add([FromBody] List<ApiTemplate> templateList)
-        //{
-        //    int num = await _service.AddAsync(templateList);
-        //    return num != -1 ? (IActionResult)Ok((object)new
-        //    {
-        //        flag = true,
-        //        message = string.Format("Number of shipment risk added =   {0}", (object)num),
-        //        data = num
-        //    }) : (IActionResult)BadRequest((object)new
-        //    {
-        //        flag = false,
-        //        message = "Error, Cannot add the shipment risks",
-        //        data = 0
-        //    });
-        //}
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost]
+        [Route("Update")]
+        public async Task<IActionResult> Add([FromBody] List<ApiTemplate> templateList)
+        {
+            bool isConvert = false;
+            if(templateList == null )
+                return (IActionResult)BadRequest((object)new
+                {
+                    flag = false,
+                    message = "Error, Cannot add the shipment risks",
+                    data = 0
+                });
+            if (templateList.Count > 0)
+            {
+                if (!string.IsNullOrEmpty(templateList[0].Shipment_ID))
+                {
+                    var trip = await _context.Trips.Where(t => t.IsVisible == true && t.Id == Convert.ToInt64(templateList[0].Shipment_ID)).FirstOrDefaultAsync();
+
+                    if (trip != null)
+                    {
+                        if (trip.IsConverted == true && trip.ConvertedSeen == false)
+                        {
+                            isConvert = true;
+                        }
+                    }
+
+                }
+            }
+            return templateList.Count > 0  ? (IActionResult)Ok((object)new
+            {
+                flag = true,
+                message = string.Format("Number of shipment risk added =   {0}", (object)templateList.Count),
+                data = new{num=templateList.Count, isConverted= isConvert }
+            }) : (IActionResult)BadRequest((object)new
+            {
+                flag = false,
+                message = "Error, Cannot add the shipment risks",
+                data = 0
+            });
+        }
 
     }
 

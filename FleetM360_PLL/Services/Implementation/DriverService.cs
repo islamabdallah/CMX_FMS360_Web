@@ -104,5 +104,24 @@ namespace FleetM360_PLL.Services.Implementation
                 return null;
             }
         }
+
+        public Task<bool> UpdateDriver(DriverModel model)
+        {
+            //model.ConditionsAccept = true;
+            var employee = _mapper.Map<Driver>(model);
+            bool result = false;
+            try
+            {
+                employee.UpdatedDate = DateTime.Now;
+                result = _repository.Update(employee);
+
+                return Task<bool>.FromResult<bool>(result);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+            }
+            return Task<bool>.FromResult<bool>(false);
+        }
     }
 }

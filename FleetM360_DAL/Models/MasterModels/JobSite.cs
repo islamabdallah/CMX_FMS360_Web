@@ -11,7 +11,7 @@ namespace FleetM360_DAL.Models.MasterModels
     {
 
         public string Name { get; set; }
-        public long? Number { get; set; }
+        public string? Number { get; set; }
 
         public double Latitude { get; set; }
 
@@ -21,5 +21,18 @@ namespace FleetM360_DAL.Models.MasterModels
         public string? City { get; set; }
 
         public bool HasNetworkCoverage { get; set; }
+
+        public string? State { get; set; }
+        public string? Type { get; set; }
+
+        public string? CustomerNumber { get; set; }
+
+        public string? CustomerName { get; set; }
+
+        public string? CustomerPhoneNumber { get; set; }
+        public string? RecipientName { get; set; }
+        public string? RecipientPhoneNumber { get; set; }
+        public string? IdealKM { get; set; }
+        public string? IdealTime { get; set; }
     }
 }

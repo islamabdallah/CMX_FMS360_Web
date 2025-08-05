@@ -2,9 +2,9 @@
 @using static FleetM360_PLL.CommanData;
 
 @* <div class="container mt-3"> *@
-<h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Trip /</span> Create Trip</h4>
+@* <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Trip /</span> Create Trip</h4>
 <!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> *@
 <!-- bs-stepper CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bs-stepper/dist/css/bs-stepper.min.css" rel="stylesheet">
 <style>
@@ -17,6 +17,12 @@
     z-index: 1056 !important;
 }
 </style>
+@{
+    var allDriversJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.DriverSelectList);
+}
+<script>
+    const allDrivers = @Html.Raw(allDriversJson); // global JS variable
+</script>
 
 <div class="row">
     <div class="col-lg-12 mb-4 order-0">
@@ -98,7 +104,7 @@
                                     <option value="2">Maintainance</option>
                                 </select>
                             </div>
-                            <div class="col-6 col-lg-4 mb-3">
+                            <div class="col-6 col-lg-4 mb-3" hidden>
                                 <label class="form-label" for="loadDrivers">Loading Drivers</label>
 
                                 @Html.DropDownListFor(
@@ -109,18 +115,15 @@
                                          )                              
 
                             </div>
-                            <div class="col-6 col-lg-4 mb-3">
+                          
+
+                            <div class="col-6 col-lg-6 mb-3">
                                 <label class="form-label" for="onRoadDrivers">OnRoad Drivers</label>
-                             
                                 @Html.DropDownListFor(
                                          model => model.onRoadDrivers,
-                                         new SelectList(Model.Drivers, "DriverNumber", "DriverNumber"),
-                                         "Select Drivers",
-                                         new { @class = "form-select", @id = "onRoadDrivers" }
+                                         ViewBag.DriverSelectList as List<SelectListItem>,
+                                         new { @class = "form-select", @id = "onRoadDrivers", multiple = "multiple", required = "required" }
                                          )
-                                
-                              
-
                             </div>
                             <div class="col-6 col-lg-4 mb-3">
                                 <label class="form-label" for="Sourse">Source</label>
@@ -140,10 +143,10 @@
                             <table class="table datatable align-items-center mb-0" id="ResourceTable">
                                 <thead>
 
-                                <th>Id</th>
-                                <th>Name</th>
-                                <th>Latitude</th>
-                                <th>Longitude</th>
+                                <th hidden>Id</th>
+                                <th hidden>Name</th>
+                                <th hidden>Latitude</th>
+                                <th hidden>Longitude</th>
                                 <th>Desc</th>
                                 <th>Qty</th>
                                 <th>Material</th>
@@ -172,10 +175,10 @@
                             <table class="table datatable align-items-center mb-0" id="ResourceTable">
                                 <thead>
 
-                                <th>Id</th>
-                                <th>Name</th>
-                                <th>Latitude</th>
-                                <th>Longitude</th>
+                                        <th hidden>Id</th>
+                                        <th hidden>Name</th>
+                                        <th hidden>Latitude</th>
+                                        <th hidden>Longitude</th>
                                 <th>Desc</th>
                                 <th>Qty</th>
                                 <th>Material</th>
@@ -249,6 +252,60 @@
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
+                            <div class="col-4 col-lg-4 mb-3">
+
+                                <p>Parent Number: <code class="language-plaintext highlighter-rouge" id="Naa">@item.ParentTrip </code></p>
+                            </div>
+
+                            <div class="col-4 col-lg-4 mb-3">
+                                <p>
+                                    Truck Number: <code class="language-plaintext highlighter-rouge" id="Stt">
+                                        @item.Trips[0].TruckNumber
+                                    </code>
+                                </p>
+                            </div>
+
+                            <div class="col-4 col-lg-4 mb-3">
+                                <p>
+                                    Silo Number: <code class="language-plaintext highlighter-rouge" id="Stt">
+                                        @item.Trips[0].SiloNumber
+                                    </code>
+                                </p>
+                            </div>
+
+
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-6 col-lg-6 mb-3">
+                                <label class="form-label" for="driversNumber">OnRoad Drivers</label>
+                                @Html.ListBoxFor(
+                                         model => item.OnRoadDrivers,                          // collection of selected IDs in your model
+                                         ViewBag.DriverSelectList as List<SelectListItem>,      // list of all drivers
+                                         new { @class = "form-select", @id = "OnRoadDrivers", required = "required", @disabled = "disabled" }
+                                         )
+                            </div>
+
+                            <div class="col-6 col-lg-6 mb-3">
+                                <br />
+                             
+                                <button type="button" class="btn btn-primary"
+                                        onclick="openAddDriverModal('@item.ParentTrip', @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.OnRoadDrivers)))">
+                                    Add Drivers
+                                </button>
+
+                               
+                            </div>
+
+                        </div>
+
+                        <br />
+                        <hr />
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Group of Trips</h5>
+                           
+                        </div>
+                        <div class="row g-3">
                             <div class="table-responsive-sm">
                                 <table class="table table-bordered">
                                     <thead>
@@ -304,7 +361,8 @@
                                                     </td>
                                                                     <td>@trip.Qty</td>
                                                    
-                                                    <td><a href="#" class="card-link" hidden>View Details</a></td>
+                                                   @*  <td><a href="#" class="card-link" hidden>View Details</a></td> *@
+                                                    <td><a asp-controller="Trip" asp-action="TripConvertDetails" asp-route-id="@trip.Id" class="card-link">Edit</a></td>
                                                     @* <td>Yes</td>
                             <td>Yes</td>
                             <td>Yes</td> *@
@@ -317,7 +375,7 @@
                             </div>
 
                             <div class="col-12 mb-3">
-                                <button type="submit" class="btn btn-primary" onclick="Create(@item.ParentTrip)">Create SubTrip</button>
+                                <button type="submit" class="btn btn-primary" onclick="Create(@item.ParentTrip,@item.Trips[0].TypeId,@item.Trips[0].SubTypeId)">Create SubTrip</button>
                             </div>
                         </div>
 
@@ -329,6 +387,64 @@
     }
 }
 
+
+<div class="modal fade" id="exLargeModalAddDriver" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel4">Modal title</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Parent Number:</label>
+                            <div id="" class="form-control-plaintext"></div>
+                            <input type="number" id="displayParentNumber" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">OnRoad Drivers:</label>
+                            <ul id="displayOnRoadDrivers" class="list-group">
+                                <!-- Drivers will be populated here -->
+                            </ul>
+                        </div>
+
+                        <!-- Optional hidden fields for submission -->
+                        <input type="hidden" name="ParentNumber" id="modalParentNumber" />
+                        <input type="hidden" name="OnRoadDrivers" id="modalOnRoadDrivers" />
+                    </div>
+
+                    <div class="col-6 col-lg-6 mb-3">
+                        <label class="form-label" for="driversNumber">OnRoad Drivers</label>
+                        @Html.ListBoxFor(
+                                 model => model.Drivers,                          // collection of selected IDs in your model
+                                 ViewBag.DriverSelectList as List<SelectListItem>,      // list of all drivers
+                                 new { @class = "form-select", @id = "onRoadDriversAdd", required = "required" }
+                                 )
+                    </div>
+
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary" onclick="AddDriver()">Add Drivers</button>
+                       
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+
+            </div>
+        </div>
+    </div>
+</div>
 
 <!--Extra Large Modal-->
 <div class="modal fade" id="exLargeModall" tabindex="-1" aria-hidden="true">
@@ -343,99 +459,7 @@
             </div>
             <div class="modal-body">
                 <div class="row">
-                    <div class="col-6 col-lg-6 mb-3">
-                        <label class="form-label" for="Qty">Parent Number</label>
-                        <div class="input-group input-group-merge">
-                            @* <span class="input-group-text"><i class="bx bx-envelope"></i></span> *@
-                            <input type="number"
-                                   id="lmParentNumber"
-                                   class="form-control"
-                                   placeholder="Qty"
-                                   aria-label="john.doe"
-                                   aria-describedby="basic-icon-default-email2" readonly/>
-                            @*  <span id="basic-icon-default-email2" class="input-group-text">example.com</span> *@
-                        </div>
-                        @*  <div class="form-text">You can use letters, numbers & periods</div> *@
-                    </div>
-                    <div class="col-6 col-lg-6 mb-3">
-                        <label class="form-label" for="basic-icon-default-fullname">Trip Type</label>
-                        <select id="lmType" class="form-select">
-                            <option value="-1" selected>Select Type...</option>
-                            <option value="2">Backhauling</option>
-                            <option value="3">Mission</option>
-                        </select>
-                        <span id="lmTypeT" class="input-group-text" style="color:red;" hidden>Select Type</span>
-                    </div>
-                    <div class="col-6 col-lg-6 mb-3" hidden>
-                        <label class="form-label" for="basic-icon-default-fullname">Mission Type</label>
-                        <select id="inputState" class="form-select">
-                            <option selected>Select Type...</option>
-                            <option value="3">Transportation</option>
-                            <option value="4">External Workshop</option>
-                            <option value="2">Maintainance</option>
-                        </select>
-                    </div>
-                    <div class="col-6 col-lg-6 mb-3">
-                        <label class="form-label" for="Sourse">Source</label>
-                        <input id="SelectedEmployeeNumbers24" onchange="approve()" value="" hidden />
-
-
-                        <select class="form-control form-select col-md-1" id="multiSelect24" name="multiSelect24[]" multiple="multiple" style="width: 100%;" asp-items="@(new SelectList(Model.JobSites, "Id", "Desc"))">
-                            <option value="-1" disabled>Select Source</option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-lg-12 mb-3" id="lmtableDiv" hidden>
-                        <div class="form-group" id="lmtable" >
-                            <label for="recipient-name" class="col-form-label">Source Location Details:</label>
-                            @*  <table class="table table-bordered" id="ResourceTable"> *@
-                            <table class="table datatable align-items-center mb-0" id="ResourceTable">
-                                <thead>
-
-                                <th>Id</th>
-                                <th>Name</th>
-                                <th>Latitude</th>
-                                <th>Longitude</th>
-                                <th>Desc</th>
-                                <th>Qty</th>
-                                <th>Material</th>
-                                </thead>
-                                <tbody id="lmtbody">
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="col-6 col-lg-6 mb-3">
-                        <label for="Distination" class="form-label">Destination</label>
-
-                        <input id="SelectedEmployeeNumbers23" value="" hidden />
-
-
-                        <select class="form-control form-select col-md-1" id="multiSelect23" name="multiSelect23[]" multiple="multiple" style="width: 100%;" asp-items="@(new SelectList(Model.JobSites, "Id", "Desc"))">
-                            <option value="-1" disabled>Select Destination</option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-lg-12 mb-3" id="lmtableDiv23" hidden>
-                        <div class="form-group" id="lmtable23">
-                            <label for="recipient-name" class="col-form-label">Destination location Details:</label>
-                            @*  <table class="table table-bordered" id="ResourceTable"> *@
-                            <table class="table datatable align-items-center mb-0" id="ResourceTable">
-                                <thead>
-
-                                <th>Id</th>
-                                <th>Name</th>
-                                <th>Latitude</th>
-                                <th>Longitude</th>
-                                <th>Desc</th>
-                                <th>Qty</th>
-                                <th>Material</th>
-                                </thead>
-                                <tbody id="lmtbody23">
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
+                   
                     <div class="col-6 col-lg-6 mb-3">
                         <label class="form-label" for="loadDrivers">Loading Drivers</label>
                         @Html.DropDownListFor(
@@ -456,46 +480,7 @@
                     </div>
 
 
-                    <div class="col-6 col-lg-6 mb-3">
-                        <label class="form-label" for="Qty">Quantity</label>
-                        <div class="input-group input-group-merge">
-                            @* <span class="input-group-text"><i class="bx bx-envelope"></i></span> *@
-                            <input type="number"
-                                   id="lmqty"
-                                   class="form-control"
-                                   placeholder="Qty"
-                                   aria-label="john.doe"
-                                   aria-describedby="basic-icon-default-email2" />
-                            <span id="lmqtyT" class="input-group-text" style="color:red;" hidden>Enter total Quantity</span>
-                            @*  <span id="basic-icon-default-email2" class="input-group-text">example.com</span> *@
-                        </div>
-                        @*  <div class="form-text">You can use letters, numbers & periods</div> *@
-                    </div>
-
-                    <div class="col-6 col-lg-6 mb-3">
-                        <label class="form-label" for="Qty">Departure Date</label>
-                        <div class="input-group input-group-merge">
-                            <input type="datetime-local"
-                                   id="lmDep"
-                                   class="form-control"
-                                   placeholder="Qty"
-                                   aria-label="john.doe"
-                                   aria-describedby="basic-icon-default-email2" />
-                            <span id="lmDepT" class="input-group-text" style="color:red;" hidden>Select Departure Date</span>
-                        </div>
-                    </div>
-                    <div class="col-6 col-lg-6 mb-3">
-                        <label class="form-label" for="Qty">Arrival Date</label>
-                        <div class="input-group input-group-merge">
-                            <input type="datetime-local"
-                                   id="lmariv"
-                                   class="form-control"
-                                   placeholder="Qty"
-                                   aria-label="john.doe"
-                                   aria-describedby="basic-icon-default-email2" />
-                            <span id="lmarivT" class="input-group-text" style="color:red;" hidden>Select Arrival Date</span>
-                        </div>
-                    </div>
+                   
 
                 </div>
 
@@ -531,7 +516,7 @@
                                 <button type="button" class="step-trigger" role="tab"
                                         id="step-1-trigger" aria-controls="step-1">
                                     <span class="bs-stepper-circle">1</span>
-                                    <span class="bs-stepper-label">Personal Info</span>
+                                    <span class="bs-stepper-label">Trip Info</span>
                                 </button>
                             </div>
                             <div class="line"></div>
@@ -539,7 +524,7 @@
                                 <button type="button" class="step-trigger" role="tab"
                                         id="step-2-trigger" aria-controls="step-2">
                                     <span class="bs-stepper-circle">2</span>
-                                    <span class="bs-stepper-label">Preferences</span>
+                                    <span class="bs-stepper-label">Locations Info</span>
                                 </button>
                             </div>
                         </div>
@@ -548,6 +533,23 @@
                                 <div class="stepper-content">
                                     <div class="row">
                                         <div class="col-6 col-lg-6 mb-3">
+                                            
+                                            <p>Parent Number: <code class="language-plaintext highlighter-rouge" id="Naa"> </code></p>
+                                        </div>
+
+                                        <div class="col-6 col-lg-6 mb-3">
+                                            <p>
+                                                Parent Type: <code class="language-plaintext highlighter-rouge" id="Stt">
+                                                </code>
+                                            </p>
+                                        </div>
+
+                                       
+                                    </div>
+
+
+                                    <div class="row">
+                                        <div class="col-6 col-lg-6 mb-3" hidden>
                                             <label class="form-label" for="Qty">Parent Number</label>
                                             <div class="input-group input-group-merge">
                                                 @* <span class="input-group-text"><i class="bx bx-envelope"></i></span> *@
@@ -564,9 +566,9 @@
                                         <div class="col-6 col-lg-6 mb-3">
                                             <label class="form-label" for="basic-icon-default-fullname">Trip Type</label>
                                             <select id="lmType" class="form-select">
-                                                <option value="-1" selected>Select Type...</option>
+                                               @*  <option value="-1" selected>Select Type...</option>
                                                 <option value="2">Backhauling</option>
-                                                <option value="3">Mission</option>
+                                                <option value="3">Mission</option> *@
                                             </select>
                                             <span id="lmTypeT" class="input-group-text" style="color:red;" hidden>Select Type</span>
                                         </div>
@@ -579,6 +581,21 @@
                                                 <option value="2">Maintainance</option>
                                             </select>
                                         </div>
+
+                                        <div class="col-6 col-lg-6 mb-3">
+                                            <label class="form-label" for="Qty">Departure Date</label>
+                                            <div class="input-group input-group-merge">
+                                                <input type="datetime-local"
+                                                       id="lmDep"
+                                                       class="form-control"
+                                                       placeholder="Qty"
+                                                       aria-label="john.doe"
+                                                       aria-describedby="basic-icon-default-email2" />
+                                                <span id="lmDepT" class="input-group-text" style="color:red;" hidden>Select Departure Date</span>
+                                            </div>
+                                        </div>
+
+
                                         <div class="col-6 col-lg-6 mb-3">
                                             <label class="form-label" for="Sourse">Source</label>
                                             <input id="SelectedEmployeeNumbers24" onchange="approve()" value="" hidden />
@@ -587,21 +604,57 @@
                                             <select class="form-control form-select col-md-1" id="multiSelect24" name="multiSelect24[]" multiple="multiple" style="width: 100%;" asp-items="@(new SelectList(Model.JobSites, "Id", "Desc"))">
                                                 <option value="-1" disabled>Select Source</option>
                                             </select>
+                                            <span id="sourseT" class="input-group-text" style="color:red;" hidden>Select Source Location</span>
+                                        </div>
+
+                                        <div class="col-6 col-lg-6 mb-3">
+                                            <label for="Distination" class="form-label">Destination</label>
+
+                                            <input id="SelectedEmployeeNumbers23" value="" hidden />
+
+
+                                            <select class="form-control form-select col-md-1" id="multiSelect23" name="multiSelect23[]" multiple="multiple" style="width: 100%;" asp-items="@(new SelectList(Model.JobSites, "Id", "Desc"))">
+                                                <option value="-1" disabled>Select Destination</option>
+                                            </select>
+                                            <span id="destT" class="input-group-text" style="color:red;" hidden>Select Destination Location</span>
+                                        </div>
+
+
+                                        <div class="col-6 col-lg-6 mb-3" hidden>
+                                            <label class="form-label" for="Qty">Quantity</label>
+                                            <div class="input-group input-group-merge">
+                                                @* <span class="input-group-text"><i class="bx bx-envelope"></i></span> *@
+                                                <input type="number"
+                                                       id="lmqty"
+                                                       class="form-control"
+                                                       placeholder="Qty"
+                                                       aria-label="john.doe"
+                                                       aria-describedby="basic-icon-default-email2" value="0" />
+                                                <span id="lmqtyT" class="input-group-text" style="color:red;" hidden>Enter total Quantity</span>
+                                                @*  <span id="basic-icon-default-email2" class="input-group-text">example.com</span> *@
+                                            </div>
+                                            @*  <div class="form-text">You can use letters, numbers & periods</div> *@
+                                        </div>
+
+                                      
+
+                                        <div class="col-6 col-lg-6 mb-3" hidden>
+                                            <label class="form-label" for="Qty">Arrival Date</label>
+                                            <div class="input-group input-group-merge">
+                                                <input type="datetime-local"
+                                                       id="lmariv"
+                                                       class="form-control"
+                                                       placeholder="Qty"
+                                                       aria-label="john.doe"
+                                                       aria-describedby="basic-icon-default-email2" />
+                                                <span id="lmarivT" class="input-group-text" style="color:red;" hidden>Select Arrival Date</span>
+                                            </div>
                                         </div>
                                    
                                     </div>
-                                    <div class="col-6 col-lg-6 mb-3">
-                                        <label for="Distination" class="form-label">Destination</label>
-
-                                        <input id="SelectedEmployeeNumbers23" value="" hidden />
-
-
-                                        <select class="form-control form-select col-md-1" id="multiSelect23" name="multiSelect23[]" multiple="multiple" style="width: 100%;" asp-items="@(new SelectList(Model.JobSites, "Id", "Desc"))">
-                                            <option value="-1" disabled>Select Destination</option>
-                                        </select>
-                                    </div>
+                                  
                                    
-                                    <button class="btn btn-primary" onclick="stepper.next()">Next</button>
+                                    <button class="btn btn-primary" onclick="validateAndGoNext()">Next</button>
                                 </div>
                             </div>
                             <div id="step-2" class="content" role="tabpanel" aria-labelledby="step-2-trigger">
@@ -612,14 +665,15 @@
                                     <div class="col-12 col-lg-12 mb-3" id="lmtableDiv" >
                                         <div class="form-group" id="lmtable">
                                             <label for="recipient-name" class="col-form-label">Source Location Details:</label>
+                                            <span id="SoQtyT" class="input-group-text" style="color:red;" hidden>Add Quantity for Source</span>
                                             @*  <table class="table table-bordered" id="ResourceTable"> *@
                                             <table class="table datatable align-items-center mb-0" id="ResourceTable">
                                                 <thead>
 
-                                                <th>Id</th>
-                                                <th>Name</th>
-                                                <th>Latitude</th>
-                                                <th>Longitude</th>
+                                                <th hidden>Id</th>
+                                                <th hidden>Name</th>
+                                                <th hidden>Latitude</th>
+                                                <th hidden>Longitude</th>
                                                 <th>Desc</th>
                                                 <th>Qty</th>
                                                 <th>Material</th>
@@ -634,25 +688,28 @@
                                     <div class="col-12 col-lg-12 mb-3" id="lmtableDiv23" >
                                         <div class="form-group" id="lmtable23">
                                             <label for="recipient-name" class="col-form-label">Destination location Details:</label>
+                                            <span id="DistQtyT" class="input-group-text" style="color:red;" hidden>Add Quantity for Destination</span>
                                             @*  <table class="table table-bordered" id="ResourceTable"> *@
-                                            <table class="table datatable align-items-center mb-0" id="ResourceTable">
+                                            <table class="table datatable align-items-center mb-0" id="ResourceTable23">
                                                 <thead>
 
-                                                <th>Id</th>
-                                                <th>Name</th>
-                                                <th>Latitude</th>
-                                                <th>Longitude</th>
+                                                <th hidden>Id</th>
+                                                <th hidden>Name</th>
+                                                <th hidden>Latitude</th>
+                                                <th hidden>Longitude</th>
                                                 <th>Desc</th>
                                                 <th>Qty</th>
                                                 <th>Material</th>
-                                                </thead>
+                                                </th>
                                                 <tbody id="lmtbody23">
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
                                     <button class="btn btn-secondary me-2" onclick="stepper.previous()">Back</button>
-                                    <button class="btn btn-success">Finish</button>
+                                    <button type="button" class="btn btn-primary" onclick="createSub()">Create SubTrip</button>
+                                    <span id="MatchT" class="input-group-text" style="color:red;" hidden>Quantity of source not Matched with Quantity of destination</span>
+                                    @* <button class="btn btn-success">Finish</button> *@
                                 </div>
                             </div>
                         </div>
@@ -665,7 +722,7 @@
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                     Close
                 </button>
-                <button type="button" class="btn btn-primary" onclick="createSub()">Create SubTrip</button>
+              
             </div>
         </div>
     </div>
@@ -676,6 +733,92 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- bs-stepper JS -->
     <script src="https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js"></script>
+    <script>
+                             function openAddDriverModal(parentNumber, onRoadDrivers) {
+            // Show Parent Number
+            document.getElementById('displayParentNumber').value = parentNumber;
+
+            // Show OnRoadDrivers (read-only list)
+            const displayList = document.getElementById('displayOnRoadDrivers');
+            displayList.innerHTML = '';
+            onRoadDrivers.forEach(driverId => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.textContent = `Driver #${driverId}`;
+                displayList.appendChild(li);
+            });
+
+            // Filter full list by excluding assigned driver IDs
+            const filtered = allDrivers.filter(d => !onRoadDrivers.includes(parseInt(d.Value)));
+
+            // Populate select list
+            const select = document.getElementById('onRoadDriversAdd');
+            select.innerHTML = '';
+            filtered.forEach(d => {
+                const option = document.createElement('option');
+                option.value = d.Value;
+                option.textContent = d.Text;
+                select.appendChild(option);
+            });
+
+            // Show the modal
+            const modalEl = document.getElementById('exLargeModalAddDriver');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+
+    </script>
+    <script>
+           function AddDriver(){
+               var ParentNumber=document.getElementById("displayParentNumber").value;
+               // var SelectedDrivers = document.getElementById("onRoadDriversAdd").value;
+                var select = document.getElementById("onRoadDriversAdd");
+                var SelectedDrivers = Array.from(select.selectedOptions).map(opt => opt.value);
+
+          alert(SelectedDrivers);
+           //console.log(SelectedDrivers);
+        if(SelectedDrivers == ""){
+                  alert("please Select Drivers");
+              }
+             
+              else{
+                  
+            $.ajax({
+               url: '@Url.Content("~/")' + "Trip/AddDrivers",
+               data: { Parent: ParentNumber, drivers:SelectedDrivers },
+               async: true,
+               type: "POST",
+               success: function (data) {
+                  if (data.redirectUrl) {
+                      alert("Done");
+                   var form = $('<form></form>');
+                   form.attr("method", "POST");
+                   form.attr("action", data.redirectUrl);
+                   $.each(responseModel, function (key, value) {
+                       var input = $('<input></input>').attr({
+                           type: 'hidden',
+                           name: key,
+                           value: value
+                       });
+                       form.append(input);
+                   });
+                   $('body').append(form);
+                   form.submit();
+
+               } else {
+                   alert("Failed to redirect.");
+               }
+
+               },
+               error: function () {
+               alert("An error occurred.");
+           }
+           });
+           }
+           }
+    </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
           window.stepper = new Stepper(document.querySelector('#myStepper'), {
@@ -702,18 +845,140 @@
        }
     </script>
     <script>
-        function Create(num){
+        function Create(num,type,subType){
+            var txt="";
+            if(type==1){
+                txt="Cement";
+            }
+            else if(type==2){
+                txt="Backhualing";
+            }
+            else{
+                txt="Mission";
+            }
+            if(subType == 0){
+                //alert("cement");
+                 var positionss = document.getElementById("lmType");
+            positionss.value = '';
+            var op1 = document.createElement('option');
+            op1.text = 'Select Type';
+            op1.value = -1;
+            op1.selected = true;
+            positionss.options[0] = op1;
+            var op2 = document.createElement('option');
+            op2.text = 'Mission';
+            op2.value = 3;
+            op2.selected = false;
+            positionss.options[1] = op2;
+
+            }
+            else{
+                //alert("noncment");
+                  var positionss = document.getElementById("lmType");
+            positionss.value = '';
+            var op1 = document.createElement('option');
+            op1.text = 'Select Type';
+            op1.value = -1;
+            op1.selected = true;
+            positionss.options[0] = op1;
+            var op2 = document.createElement('option');
+            op2.text = 'Mission';
+            op2.value = 3;
+            op2.selected = false;
+            positionss.options[1] = op2;
+            var op3 = document.createElement('option');
+            op3.text = 'Backhauling';
+            op3.value = 2;
+            op3.selected = false;
+            positionss.options[2] = op3;
+            }
             //alert(num);
             document.getElementById("lmParentNumber").value=num;
              document.getElementById("lmTypeT").hidden=true;
                        document.getElementById("lmqtyT").hidden=true;
                         document.getElementById("lmDepT").hidden=true;
                        document.getElementById("lmarivT").hidden=true;
+                       document.getElementById("lmType").value=-1;
+                       document.getElementById("lmDep").value="";
+                        document.getElementById("Naa").innerText=" #"+num;
+                         document.getElementById("Stt").innerText=txt;
            $('#exLargeModal').modal('show');
         }
     </script>
     <script>
         function createSub(){
+            alert("hi");
+            var SoQty=0;
+            var DistQty=0;
+             var headers = []
+        $('#ResourceTable thead th').each(function (i) {
+            headers.push($(this).text())
+        })
+        // result array
+        var array = [];
+        $('#ResourceTable tr').each(function (i) {
+            // declare object variable but dont set it's value
+            // unless there are objects to find
+            var rowObj
+            $(this).find('td').each(function (i) {
+                if (!rowObj) rowObj = {}
+                if (headers[i] == "Qty") {
+                    // alert(headers[i]);
+                    console.log(headers[i]);
+                    SoQty += parseFloat(this.firstChild.value);
+                    //alert(SoQty);
+                    rowObj[headers[i]] = this.firstChild.value;
+                }
+                else if (headers[i] == "Material") {
+                    // alert(headers[i]);
+                    console.log(headers[i]);
+                    //alert(headers[i]);
+                    rowObj[headers[i]] = this.firstChild.value;
+                }
+                else {
+                    rowObj[headers[i]] = $(this).text()
+                }
+            });
+            if (rowObj) array.push(rowObj)
+        });
+        // alert("done");
+        // alert(array);
+        console.log(array)
+        //distination
+         var headers23 = []
+        $('#ResourceTable23 thead th').each(function (i) {
+            headers23.push($(this).text())
+        })
+        // result array
+        var array23 = [];
+        $('#ResourceTable23 tr').each(function (i) {
+            // declare object variable but dont set it's value
+            // unless there are objects to find
+            var rowObj
+            $(this).find('td').each(function (i) {
+                if (!rowObj) rowObj = {}
+                if (headers[i] == "Qty") {
+                    // alert(headers[i]);
+                    console.log(headers[i]);
+                    DistQty += parseFloat(this.firstChild.value);
+                    //alert(DistQty);
+                    rowObj[headers[i]] = this.firstChild.value;
+                }
+                else if (headers[i] == "Material") {
+                    // alert(headers[i]);
+                    console.log(headers[i]);
+                    //alert(headers[i]);
+                    rowObj[headers[i]] = this.firstChild.value;
+                }
+                else {
+                    rowObj[headers23[i]] = $(this).text()
+                }
+            });
+            if (rowObj) array23.push(rowObj)
+        });
+        // alert("done");
+        // alert(array);
+        console.log(array23)
             var id=document.getElementById("TruckId").value;
              var responseModel =
         {
@@ -721,39 +986,34 @@
             TypeId: document.getElementById("lmType").value,
             ParentTrip: document.getElementById("lmParentNumber").value,
             Qty: document.getElementById("lmqty").value,
-            ArrivedDate: document.getElementById("lmariv").value,
+            ArrivedDate:  document.getElementById("lmDep").value,
             departureDate: document.getElementById("lmDep").value,
         };
        
         console.log(responseModel);
-               
-                   if(responseModel.TypeId == -1){
-                       document.getElementById("lmTypeT").hidden=false;
+
+                   if(SoQty == 0 && responseModel.TypeId==2){
+                       document.getElementById("SoQtyT").hidden=false;
                    }
-                   else if(responseModel.Qty == '' && responseModel.TypeId==2){
-                       document.getElementById("lmTypeT").hidden=true;
-                       document.getElementById("lmqtyT").hidden=false;
+                   else if(DistQty == 0 && responseModel.TypeId==2){
+                       document.getElementById("SoQtyT").hidden=true;
+                       document.getElementById("DistQtyT").hidden=false;
                    }
-                    else if(responseModel.departureDate == ''){
-                       document.getElementById("lmTypeT").hidden=true;
-                       document.getElementById("lmqtyT").hidden=true;
-                        document.getElementById("lmDepT").hidden=false;
+                    else if(SoQty != DistQty){
+                       document.getElementById("SoQtyT").hidden=true;
+                       document.getElementById("DistQtyT").hidden=true;
+                        document.getElementById("MatchT").hidden=false;
                       // document.getElementById("lmqtyT").hidden=false;
-                   }
-                    else if(responseModel.ArrivedDate == ''){
-                       document.getElementById("lmTypeT").hidden=true;
-                       document.getElementById("lmqtyT").hidden=true;
-                        document.getElementById("lmDepT").hidden=true;
-                       document.getElementById("lmarivT").hidden=false;
-                   }
+                   }                   
                    else{
-                        document.getElementById("lmTypeT").hidden=true;
-                       document.getElementById("lmqtyT").hidden=true;
-                        document.getElementById("lmDepT").hidden=true;
-                       document.getElementById("lmarivT").hidden=true;
+                       //alert("Done");
+                        document.getElementById("SoQtyT").hidden=true;
+                       document.getElementById("DistQtyT").hidden=true;
+                        document.getElementById("MatchT").hidden=true;
+                        responseModel.Qty=parseFloat(SoQty);
          $.ajax({
             url: '@Url.Content("~/")' + "Trip/AddResponse",
-            data: { responseModel: responseModel },
+            data: { responseModel: responseModel , Destination: array23 , Source: array },
             async: true,
             type: "POST",
             success: function (data) {
@@ -781,6 +1041,58 @@
         }
         });
         }
+        }
+    </script>
+
+
+    <script>
+        function validateAndGoNext() {
+            var responseModel =
+        {
+            TruckId: document.getElementById("TruckId").value,
+            TypeId: document.getElementById("lmType").value,
+            ParentTrip: document.getElementById("lmParentNumber").value,
+            Qty: document.getElementById("lmqty").value,
+            ArrivedDate: document.getElementById("lmDep").value,
+            departureDate: document.getElementById("lmDep").value,
+        };
+        var sourse = document.getElementById("SelectedEmployeeNumbers24").value;
+        var dest = document.getElementById("SelectedEmployeeNumbers23").value;
+        console.log(responseModel);
+
+                   if(responseModel.TypeId == -1){
+                       document.getElementById("lmTypeT").hidden=false;
+                   }
+                   else if(responseModel.Qty == '' && responseModel.TypeId==2){
+                       document.getElementById("lmTypeT").hidden=true;
+                       document.getElementById("lmqtyT").hidden=false;
+                   }
+                    else if(responseModel.departureDate == ''){
+                       document.getElementById("lmTypeT").hidden=true;
+                       document.getElementById("lmqtyT").hidden=true;
+                        document.getElementById("lmDepT").hidden=false;
+                      // document.getElementById("lmqtyT").hidden=false;
+                   }
+                   else if(sourse == ''){
+                       document.getElementById("lmTypeT").hidden=true;
+                       document.getElementById("lmqtyT").hidden=true;
+                        document.getElementById("lmDepT").hidden=true;
+                       document.getElementById("sourseT").hidden=false;
+                   }
+                   else if(dest == ''){
+                       document.getElementById("lmTypeT").hidden=true;
+                       document.getElementById("lmqtyT").hidden=true;
+                        document.getElementById("lmDepT").hidden=true;
+                        document.getElementById("sourseT").hidden=true;
+                       document.getElementById("destT").hidden=false;
+                   }
+                   
+                   else
+                   {
+                       // Move to the next step
+                stepper.next();
+                   }
+             
         }
     </script>
 
@@ -858,6 +1170,27 @@
 
     <script>
         $(document).ready(function() {
+                    var material = [];
+                    $('#onRoadDrivers').select2({
+                        placeholder: "Select Drivers",
+                        allowClear: true,
+                                width: '100%'
+                    });
+
+
+                            $('#onRoadDriversAdd').select2({
+                                placeholder: "Select Drivers",
+                                allowClear: true,
+                                        width: '100%',
+                                                  dropdownParent: $('#exLargeModalAddDriver') // ensures it's rendered inside the modal
+                            });
+                                  
+
+                            $('#OnRoadDrivers').select2({
+                                placeholder: "Select Drivers",
+                                allowClear: true,
+                                        width: '100%'
+                            });
 
                  $('#multiSelect').select2({
                     placeholder: "Select Destination",
@@ -881,7 +1214,7 @@
                                 // alert(lmids23);
                                 $.ajax({
                                         url: '@Url.Content("~/")' + "Trip/GetItems",
-                                    data: { Id: lmids44 },
+                                            data: { Id: lmids44},
                                     type: "POST",
                                     async: true,
                                     success: function (data) {
@@ -905,6 +1238,10 @@
                                                     var td5 = document.createElement("td");
                                                     var td6 = document.createElement("td");
                                                         var td7 = document.createElement("td");
+                                                                 td1.hidden=true;
+                                                            td2.hidden=true;
+                                                            td3.hidden=true;
+                                                            td4.hidden=true;
                                                     // td5.setAttribute("class", "modernWay");
                                                     td1.innerHTML = dataJSON[index]['Id'];
                                                         td2.innerHTML = dataJSON[index]['Name'];
@@ -932,7 +1269,7 @@
                                                 }
 
                                             }
-                                            $('#exampleModalMessage').modal('show');
+                                           // $('#exampleModalMessage').modal('show');
                                         }
                                         else {
                                             alert("failed");
@@ -990,6 +1327,10 @@
                                                     // td2.setAttribute("colspan", "2");
                                                     var td3 = document.createElement("td");
                                                     var td4 = document.createElement("td");
+                                                    td1.hidden=true;
+                                                    td2.hidden=true;
+                                                    td3.hidden=true;
+                                                    td4.hidden=true;
                                                     var td5 = document.createElement("td");
                                                     var td6 = document.createElement("td");
                                                         var td7 = document.createElement("td");
@@ -1044,6 +1385,7 @@
                         console.log(document.getElementById("SelectedEmployeeNumbers23").value);
 
                                 var lmids23 = document.getElementById("SelectedEmployeeNumbers23").value;
+                                        var tval23= document.getElementById("lmType").value;
                         //var lmentity = document.getElementById("select-users").value;
                         if (lmids23 == "") {
                            // alert("Please select Items");
@@ -1053,7 +1395,7 @@
                             // alert(lmids23);
                             $.ajax({
                                     url: '@Url.Content("~/")' + "Trip/GetItems",
-                                data: { Id: lmids23 },
+                                                data: { Id: lmids23, type: tval23},
                                 type: "POST",
                                 async: true,
                                 success: function (data) {
@@ -1061,38 +1403,58 @@
                                         var dataJSON = JSON.parse(data);
                                         //alert(dataJSON.length);
 
-                                        if (dataJSON.length > 0) {
+                                                if (dataJSON["sites"].length > 0) {
                                             var tbody = document.getElementById("lmtbody23");// $('#ResourceTable tbody');//
                                             tbody.innerHTML = "";
                                                     document.getElementById("lmtableDiv23").hidden = false;
-                                            for (var index = 0; index < dataJSON.length; index++) {
+                                                    for (var index = 0; index < dataJSON["sites"].length; index++) {
                                                 // alert(dataJSON[index]['DrugName']);
                                                 var row = document.createElement("tr");
                                                 var td1 = document.createElement("td");
                                                 var td2 = document.createElement("td");
                                                 td2.setAttribute("class", "modernWay");
+                                                td1.hidden=true;
+                                                td2.hidden=true;
                                                 // td2.setAttribute("colspan", "2");
                                                 var td3 = document.createElement("td");
                                                 var td4 = document.createElement("td");
+                                                td3.hidden=true;
+                                                td4.hidden=true;
                                                 var td5 = document.createElement("td");
                                                 var td6 = document.createElement("td");
                                                     var td7 = document.createElement("td");
                                                 // td5.setAttribute("class", "modernWay");
-                                                td1.innerHTML = dataJSON[index]['Id'];
-                                                    td2.innerHTML = dataJSON[index]['Name'];
-                                                    td3.innerHTML = dataJSON[index]['Latitude'];
-                                                    td4.innerHTML = dataJSON[index]['Longitude'];
-                                                    td6.innerHTML = dataJSON[index]['Desc'];
+                                                        td1.innerHTML = dataJSON["sites"][index]['Id'];
+                                                            td2.innerHTML = dataJSON["sites"][index]['Name'];
+                                                            td3.innerHTML = dataJSON["sites"][index]['Latitude'];
+                                                            td4.innerHTML = dataJSON["sites"][index]['Longitude'];
+                                                            td6.innerHTML = dataJSON["sites"][index]['Desc'];
                                                 var inp = document.createElement("input");
                                                 inp.setAttribute("class", "form-control");
                                                 inp.setAttribute("type", "number");
                                                 inp.value = 0;
                                                 td5.appendChild(inp);
-                                                     var inpp = document.createElement("input");
-                                                    inpp.setAttribute("class", "form-control");
-                                                    inpp.setAttribute("type", "text");
-                                                    inpp.value = "";
-                                                    td7.appendChild(inpp);
+                                                              // 2. Create the select element (no id, no multiple)
+            const selectElement = document.createElement("select");
+            //selectElement.name = "drivers"; // optional: add name for form submission
+            selectElement.style.width = "100%";
+                            selectElement.setAttribute("class", "form-control");
+            // 3. Add a default placeholder option
+            const placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.text = "Select a Material";
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            selectElement.appendChild(placeholder);
+
+            // 4. Populate with driver options
+                            dataJSON["materials"].forEach(driver => {
+                const option = document.createElement("option");
+                        option.value = driver.ProductId;
+                                option.text = `${driver.ProductId} - ${driver.ProductNameAR}`;
+                selectElement.appendChild(option);
+            });
+                                                            td7.appendChild(selectElement);
                                                 row.appendChild(td1);
                                                 row.appendChild(td2);
                                                 row.appendChild(td3);
@@ -1104,7 +1466,7 @@
                                             }
 
                                         }
-                                        $('#exampleModalMessage').modal('show');
+                                        //$('#exampleModalMessage').modal('show');
                                     }
                                     else {
                                         alert("failed");
@@ -1113,6 +1475,14 @@
                             });
                         }
                     });
+                            $('#lmType').on('change', function(){
+                                        document.getElementById("SelectedEmployeeNumbers24").value="";
+                                                        document.getElementById("SelectedEmployeeNumbers23").value="";
+                                                                                 $('#multiSelect23').val(null).trigger('change');
+            $('#multiSelect24').val(null).trigger('change');
+                                       
+                                                
+                            });
 
                         $('#multiSelect24').select2({
                             placeholder: "Select Destination",
@@ -1129,6 +1499,28 @@
                                  //alert("typeVal");
                
                     var lmids = document.getElementById("SelectedEmployeeNumbers24").value;
+                             var tval= document.getElementById("lmType").value;
+
+                    //validations
+
+                            const sourceSelect = document.getElementById('multiSelect24');
+                const destinationSelect = document.getElementById('multiSelect23');
+                        const selectedCount = Array.from(sourceSelect.selectedOptions).length;
+
+                    if (selectedCount > 1) {
+                        // Allow only one selection in destination
+                        destinationSelect.removeAttribute('multiple');
+                                 $('#multiSelect23').val(null).trigger('change');
+                    } else {
+                        // Allow multiple selections in destination
+                        destinationSelect.setAttribute('multiple', 'multiple');
+                                 $('#multiSelect23').val(null).trigger('change');
+                    }
+
+                    // Optional: Clear existing selections when switching mode
+                    destinationSelect.selectedIndex = -1;
+
+
                 //var lmentity = document.getElementById("select-users").value;
                 if (lmids == "") {
                     //alert("Please select Items");
@@ -1139,7 +1531,7 @@
                      //alert(lmids);
                     $.ajax({
                             url: '@Url.Content("~/")' + "Trip/GetItems",
-                        data: { Id: lmids },
+                                data: { Id: lmids, type: tval },
                         type: "POST",
                         async: true,
                         success: function (data) {
@@ -1147,11 +1539,12 @@
                                 var dataJSON = JSON.parse(data);
                                 //alert(dataJSON.length);
 
-                                if (dataJSON.length > 0) {
+                                        if (dataJSON["sites"].length > 0) {
+                                            //alert("welcome");
                                     var tbody = document.getElementById("lmtbody");// $('#ResourceTable tbody');//
                                     tbody.innerHTML = "";
                                             document.getElementById("lmtableDiv").hidden = false;
-                                    for (var index = 0; index < dataJSON.length; index++) {
+                                            for (var index = 0; index < dataJSON["sites"].length; index++) {
                                         // alert(dataJSON[index]['DrugName']);
                                         var row = document.createElement("tr");
                                         var td1 = document.createElement("td");
@@ -1163,22 +1556,41 @@
                                         var td5 = document.createElement("td");
                                         var td6 = document.createElement("td");
                                             var td7 = document.createElement("td");
+                                                     td1.hidden=true;
+                                                            td2.hidden=true;
+                                                            td3.hidden=true;
+                                                            td4.hidden=true;
                                         // td5.setAttribute("class", "modernWay");
-                                        td1.innerHTML = dataJSON[index]['Id'];
-                                            td2.innerHTML = dataJSON[index]['Name'];
-                                            td3.innerHTML = dataJSON[index]['Latitude'];
-                                            td4.innerHTML = dataJSON[index]['Longitude'];
-                                            td6.innerHTML = dataJSON[index]['Desc'];
+                                                td1.innerHTML = dataJSON["sites"][index]['Id'];
+                                                    td2.innerHTML = dataJSON["sites"][index]['Name'];
+                                                    td3.innerHTML = dataJSON["sites"][index]['Latitude'];
+                                                    td4.innerHTML = dataJSON["sites"][index]['Longitude'];
+                                                    td6.innerHTML = dataJSON["sites"][index]['Desc'];
                                         var inp = document.createElement("input");
                                         inp.setAttribute("class", "form-control");
                                         inp.setAttribute("type", "number");
                                         inp.value = 0;
                                         td5.appendChild(inp);
-                                             var inpp = document.createElement("input");
-                                            inpp.setAttribute("class", "form-control");
-                                            inpp.setAttribute("type", "text");
-                                            inpp.value = "";
-                                            td7.appendChild(inpp);
+                                                    const selectElement = document.createElement("select");
+                    //selectElement.name = "drivers"; // optional: add name for form submission
+                            selectElement.style.width = "100%";
+                                    selectElement.setAttribute("class", "form-control");
+                    // 3. Add a default placeholder option
+                    const placeholder = document.createElement("option");
+                    placeholder.value = "";
+                    placeholder.text = "Select a Material";
+                    placeholder.disabled = true;
+                    placeholder.selected = true;
+                    selectElement.appendChild(placeholder);
+
+                    // 4. Populate with driver options
+                                    dataJSON["materials"].forEach(driver => {
+                        const option = document.createElement("option");
+                                option.value = driver.ProductId;
+                                        option.text = `${driver.ProductId} - ${driver.ProductNameAR}`;
+                        selectElement.appendChild(option);
+                    });
+                                                                    td7.appendChild(selectElement);
                                         row.appendChild(td1);
                                         row.appendChild(td2);
                                         row.appendChild(td3);
@@ -1190,7 +1602,7 @@
                                     }
 
                                 }
-                                $('#exampleModalMessage').modal('show');
+                                //$('#exampleModalMessage').modal('show');
                             }
                             else {
                                 alert("failed");
@@ -1202,10 +1614,10 @@
                         });
 
                         $('#multiSelect23').select2({
-            dropdownParent: $('#exLargeModal .modal-body')
+                    dropdownParent: $('#exLargeModal .modal-body #step-1')
 });
     $('#multiSelect24').select2({
-                dropdownParent: $('#exLargeModal .modal-body')
+                        dropdownParent: $('#exLargeModal .modal-body #step-1')
     });
             //test
                     $('#exLargeModal').on('hidden.bs.modal', function () {

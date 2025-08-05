@@ -228,6 +228,9 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
                     b.Property<bool>("IsVisible")
                         .HasColumnType("bit");
 
+                    b.Property<string>("MobileToken")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("NationalID")
                         .HasColumnType("nvarchar(max)");
 
@@ -341,6 +344,9 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
 
                     b.Property<bool>("IsVisible")
                         .HasColumnType("bit");
+
+                    b.Property<string>("MobileToken")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NationalID")
                         .IsRequired()
@@ -505,12 +511,27 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("CustomerName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomerNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomerPhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Desc")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("HasNetworkCoverage")
                         .HasColumnType("bit");
+
+                    b.Property<string>("IdealKM")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdealTime")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDelted")
                         .HasColumnType("bit");
@@ -528,8 +549,20 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long?>("Number")
-                        .HasColumnType("bigint");
+                    b.Property<string>("Number")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RecipientName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RecipientPhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("State")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
@@ -708,6 +741,9 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<bool?>("Converted")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -758,6 +794,9 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool?>("arrivalFlag")
+                        .HasColumnType("bit");
+
                     b.Property<string>("customerName")
                         .HasColumnType("nvarchar(max)");
 
@@ -778,6 +817,42 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
                     b.HasIndex("JobSiteId");
 
                     b.ToTable("PlannedTripLocations");
+                });
+
+            modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.PlannedTripLocationProduct", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDelted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
+
+                    b.Property<long?>("MaterialId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("PlannedTripLocationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<double>("Qty")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaterialId");
+
+                    b.ToTable("PlannedTripLocationProducts");
                 });
 
             modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.PreCheckAnswer", b =>
@@ -1034,6 +1109,9 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
                     b.Property<double?>("AssignQty")
                         .HasColumnType("float");
 
+                    b.Property<bool?>("ConvertedSeen")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -1101,6 +1179,93 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
                     b.HasKey("Id");
 
                     b.ToTable("Trips");
+                });
+
+            modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.TripConvert", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDelted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("ParentTrip")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SiloNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("TripId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TripNumber")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("TruckNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("createdby")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TripConverts");
+                });
+
+            modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.TripConvertLocation", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDelted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("NewLocId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("OldLocId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TripConvertId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TripConvertLocations");
                 });
 
             modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.TripDanger", b =>
@@ -1789,6 +1954,109 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
                     b.ToTable("Trucks");
                 });
 
+            modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.TruckFailure", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("DriverNumber")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsDelted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
+
+                    b.Property<long?>("ParentTrip")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Responsible")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SiloNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("TripLogId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("TruckNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TruckFailures");
+                });
+
+            modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.TruckFailureDetail", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDelted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SiloNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Stage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("TruckFailureId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("TruckNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TruckFailureId");
+
+                    b.ToTable("TruckFailureDetails");
+                });
+
             modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.TruckNotification", b =>
                 {
                     b.Property<long>("Id")
@@ -1859,6 +2127,10 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
 
                     b.Property<bool>("IsVisible")
                         .HasColumnType("bit");
+
+                    b.Property<string>("SapKey")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SiloNumber")
                         .IsRequired()
@@ -1956,6 +2228,15 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
                     b.Navigation("JobSite");
                 });
 
+            modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.PlannedTripLocationProduct", b =>
+                {
+                    b.HasOne("FleetM360_DAL.Models.MasterModels.Material", "Material")
+                        .WithMany()
+                        .HasForeignKey("MaterialId");
+
+                    b.Navigation("Material");
+                });
+
             modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.PreCheckAnswer", b =>
                 {
                     b.HasOne("FleetM360_DAL.Models.MasterModels.PreCheckQuestion", "PreCheckQuestion")
@@ -2008,6 +2289,17 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
                     b.Navigation("Question");
                 });
 
+            modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.TruckFailureDetail", b =>
+                {
+                    b.HasOne("FleetM360_DAL.Models.MasterModels.TruckFailure", "TruckFailure")
+                        .WithMany("TruckFailures")
+                        .HasForeignKey("TruckFailureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TruckFailure");
+                });
+
             modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.PreCheckQuestion", b =>
                 {
                     b.Navigation("PreCheckAnswers");
@@ -2016,6 +2308,11 @@ namespace FleetM360_DAL.Migrations.ApplicationDB
             modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.Question", b =>
                 {
                     b.Navigation("QuestionAnswers");
+                });
+
+            modelBuilder.Entity("FleetM360_DAL.Models.MasterModels.TruckFailure", b =>
+                {
+                    b.Navigation("TruckFailures");
                 });
 #pragma warning restore 612, 618
         }

@@ -12,5 +12,6 @@ namespace FleetM360_PLL.ViewModels
         public long ParentTrip { get; set; }
         public DateTime DepartureDate { get; set; }
         public List<Trip> Trips { get; set; } = new List<Trip>();
+        public List<long>? OnRoadDrivers { get; set; }
     }
 }

@@ -19,7 +19,7 @@ namespace FleetM360_DAL.Models.MasterModels
         public string address { get; set; }
         public string NationalID { get; set; }
         public string? PersonalPhoto { get; set; }
-
+        public string? MobileToken { get; set; }
         public string? UserToken { get; set; }
         public bool? ConditionsAccept { get; set; }
 

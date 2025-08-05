@@ -16,6 +16,11 @@ namespace FleetM360_PLL.Services.Contracts
         Task<bool> CreateArriveSiteAsync(TruckStatusApiModel model);
         Task<bool> CreateStartRoadMaintenanceAsync(sendStopStartTime model);
         Task<bool> CreateSiteProcessingAsync(sendTake5DataApiModel model);
+        Task<bool> CreateSiteProcessingByStageAsync(sendTake5DataByStageApiModel model);
+        Task<bool> CreateSiteProcessingSage1(sendTake5DataByStageApiModel model);
+        Task<bool> CreateSiteProcessingSage2(sendTake5DataByStageApiModel model);
+        Task<bool> CreateSiteProcessingSage3(sendTake5DataByStageApiModel model);
+        Task<bool> CreateSiteProcessingSage4(sendTake5DataByStageApiModel model);
         Task<bool> CreateStartStopBanAsync(sendStopStartTime model);
         Task<bool> CreateEndRoadMaintenanceAsync(sendStopStartTime model);
         Task<bool> CreateEndStopBanAsync(sendStopStartTime model);

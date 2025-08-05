@@ -9,8 +9,10 @@ using FleetM360_PLL.Services.Implementation;
 using FleetM360_PLL.ViewModels;
 using FleetM360_Web.hub;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+//using Newtonsoft.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -113,6 +115,85 @@ namespace FleetM360_Web.Controllers
             {
                 return RedirectToAction("ERROR404");
             }
+        }
+
+        public async Task<IActionResult> TruckFailure()
+        {
+            try
+            {
+                var truckFailureModels = await _context.TruckFailures
+                    .Where(t => t.IsVisible && t.Responsible == "Admin")
+                    .Select(t => new TruckFailure
+                    {
+                        Id = t.Id,
+                        TruckNumber = t.TruckNumber,
+                        SiloNumber = t.SiloNumber,
+                        DriverNumber = t.DriverNumber,
+                        Category = t.Category,
+                        Responsible = t.Responsible,
+                        TripLogId = t.TripLogId,
+                        ParentTrip = t.ParentTrip,
+                        TruckFailures = t.TruckFailures
+                            .Where(fd => fd.Stage != "End")
+                            .ToList()
+                    })
+                    .ToListAsync();
+                List< TruckFailureVModel > models = new List< TruckFailureVModel >();
+                if (truckFailureModels != null)
+                {
+                    if(truckFailureModels.Count > 0)
+                    {
+                        foreach(var truck in truckFailureModels)
+                        {
+                            TruckFailureVModel model = new TruckFailureVModel();
+                            model.trucks = truck;
+                            model.hasActiveTrip = false;
+                            var triplog=await _context.TripLogs.Where(t=>t.Id==truck.TripLogId).OrderBy(t => t.Id).LastOrDefaultAsync();
+                            if(triplog != null)
+                            {
+                                model.activeTrip = await _context.Trips.Where(t => t.ParentTrip == triplog.ParentTrip && t.TripNumber == triplog.TripNumber).FirstOrDefaultAsync();
+                                if(model.activeTrip != null)
+                                {
+                                    model.hasActiveTrip=true;
+                                }
+                            }
+                            models.Add(model);
+                        }
+                    }
+                }
+                var Trucks = await _context.TruckSilos.ToListAsync(); //_truckService.GetAllActiveTrucks().Where(t => t.Type == "Truck").ToList();
+                
+                ViewBag.TruckSelectList = Trucks
+   .Select(d => new SelectListItem
+   {
+       Value = d.SiloNumber,
+       Text = d.TruckNumber,
+   })
+   .ToList();
+
+                var truckSiloMap = Trucks
+    .Where(t => !string.IsNullOrWhiteSpace(t.SiloNumber)) // ensure silo isn't null
+    .ToDictionary(t => t.TruckNumber, t => t.SiloNumber);
+
+                // JSON-encode it safely
+                ViewBag.TruckSiloJson = JsonSerializer.Serialize(truckSiloMap);
+                var Silos = _truckService.GetAllActiveTrucks().Where(t => t.Type == "Truck").ToList();
+
+                ViewBag.SiloSelectList = Silos
+   .Select(d => new SelectListItem
+   {
+       Value = d.TruckNumber,
+       Text = d.TruckNumber,
+   })
+   .ToList();
+
+                return View(models);
+            }
+            catch (Exception e)
+            {
+                return RedirectToAction("ERROR404");
+            }
+
         }
         public async Task<IActionResult> ReleaseTruck(long id)
         {

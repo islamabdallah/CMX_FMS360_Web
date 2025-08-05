@@ -28,7 +28,7 @@ namespace FleetM360_PLL
         }
         public enum TripStage
         {
-            Pending = 1,//قيد الانتظار
+            Pending = 1,//قيد الانتظار //Under Inspection
             PreCheck = 2,//قيد الفحص
             Maintenance = 3,//في الصيانة
             Loading = 4,//قيد التحميل

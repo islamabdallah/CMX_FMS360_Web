@@ -19,7 +19,8 @@ namespace FleetM360_PLL.APIViewModels.Trip
         public List<int>? questionIds { get; set; }
     }
     public class DataInfoApiModel
-    {
+    { 
+        public bool? isConverted {  get; set; }
         public String route { get; set; }
     }
     public class TruckFaultsModel{

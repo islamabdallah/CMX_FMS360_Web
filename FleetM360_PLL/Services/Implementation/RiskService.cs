@@ -15,16 +15,50 @@ namespace FleetM360_PLL.Services.Implementation
     public class RiskService : IRiskService
     {
         private ApplicationDBContext _context;
+        private ShipmentRiskRepository _repo;
+
 
         public RiskService(
-          ApplicationDBContext context
+          ApplicationDBContext context,
+          ShipmentRiskRepository repo
          )
         {
             _context = context;
+            _repo = repo;
         }
-        public Task<int> AddAsync(Risk risk)
+
+        public async Task<int> AddAsync(List<ApiTemplate> templateRisk)
         {
-            throw new NotImplementedException();
+            if (templateRisk == null || templateRisk.Count <= 0)
+                return -1;
+            try
+            {
+                int _result = 0;
+                bool _flag = true;
+                //foreach (ApiTemplate item in templateRisk)
+                //{
+                //    if (!string.IsNullOrEmpty(item.Shipment_ID))
+                //    {
+                //        if (!await this._repo.IsExistsAsync(item))
+                //        {
+                //            if (await this._repo.AddAsync(item) == -1)
+                //                _flag = false;
+                //            else
+                //                ++_result;
+                //        }
+                //    }
+                //    else if (await this._repo.AddAsync(item) == -1)
+                //        _flag = false;
+                //    else
+                //        ++_result;
+                //}
+                //return !_flag ? -1 : _result;
+                return templateRisk.Count;
+            }
+            catch (Exception ex)
+            {
+                return -1;
+            }
         }
 
         public async Task<int> AddDriverFeedbackAsync(DriverFeedback driverFeedback)
@@ -32,7 +66,7 @@ namespace FleetM360_PLL.Services.Implementation
             try
             {
                 ApiTemplate template = new ApiTemplate() { Shipment_ID = driverFeedback.Shipment_ID, Country = driverFeedback.Country, Company = driverFeedback.Company };
-                var selectedDriver = _context.Drivers.Where(t=>t.IsVisible==true && t.PhoneNumber==driverFeedback.DriverMobile).FirstOrDefault();
+                var selectedDriver = _context.Drivers.Where(t=>t.IsVisible==true && t.DriverNumber==Convert.ToInt64(driverFeedback.DriverMobile)).FirstOrDefault();
                 var selectedShipment = _context.Trips.Where(t => t.IsVisible == true && t.Id ==Convert.ToInt64(driverFeedback.Shipment_ID)).FirstOrDefault();
                 //Update Truck Number
                 //if (!string.IsNullOrEmpty(driverFeedback.DriverMobile))

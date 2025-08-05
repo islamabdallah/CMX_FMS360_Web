@@ -32,11 +32,16 @@ namespace FleetM360_WebApi.Controllers
             if (message != null)
             {
                 
-                var trip = _context.Trips.Where(a => a.Id == Convert.ToInt64(tripId)).FirstOrDefault();
+                var trip =await _context.Trips.Where(a => a.Id == Convert.ToInt64(tripId)).FirstOrDefaultAsync();
                 if (trip != null)
                 {
                     if (message.status == "maintenance_done")
                     {
+                        var truck = await _context.Trucks.Where(e => e.IsVisible == true && e.Id == Convert.ToInt64(truckId)).FirstOrDefaultAsync();
+                        truck.status = "Idle";
+                        truck.UpdatedDate = DateTime.Now;
+                        _context.Trucks.Update(truck);
+                        await _context.SaveChangesAsync();
                         name = "EndMaintainance";
                     }
                     else if (message.status == "empty_weight_started")
